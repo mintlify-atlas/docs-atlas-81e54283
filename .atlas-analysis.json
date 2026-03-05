@@ -1,0 +1,105 @@
+{
+  "projectType": "saas",
+  "projectName": "Home Manager",
+  "projectDescription": "An all-in-one platform for household management including chores, bills, shopping lists, and maintenance tracking.",
+  "theme": "almond",
+  "primaryColor": "#4A90E2",
+  "lightColor": "#7DB3F5",
+  "darkColor": "#2D5A8C",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/chores",
+              "features/bills",
+              "features/shopping",
+              "features/maintenance",
+              "features/household-management"
+            ]
+          },
+          {
+            "group": "User Guide",
+            "pages": [
+              "guide/authentication",
+              "guide/roles-permissions",
+              "guide/notifications",
+              "guide/dashboard"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/environment-variables",
+              "deployment/database-setup",
+              "deployment/deployment-guide"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api/chores-api",
+              "api/bills-api",
+              "api/shopping-api",
+              "api/maintenance-api",
+              "api/household-api",
+              "api/notifications-api",
+              "api/audit-log-api"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Household creation and member invitations",
+    "Chores tracking with assignees and recurrence",
+    "Bill tracking with payment logging",
+    "Shopping list management with categories",
+    "Maintenance task logging",
+    "Notifications and activity feed",
+    "Role-based access control",
+    "Audit logs for accountability"
+  ],
+  "publicApiSurface": [
+    "GET /api/chores - Fetch household chores",
+    "POST /api/chores - Create new chore",
+    "PUT /api/chores/update - Update chore",
+    "DELETE /api/chores/delete - Delete chore",
+    "GET /api/bills - Fetch bills",
+    "POST /api/bills - Create new bill",
+    "GET /api/bills/monthly - Get monthly bill summary",
+    "GET /api/shopping - Fetch shopping items",
+    "POST /api/shopping - Create shopping item",
+    "GET /api/maintenance - Fetch maintenance tasks",
+    "POST /api/maintenance - Create maintenance task",
+    "GET /api/household/members - Get household members",
+    "POST /api/household/init - Initialize household",
+    "POST /api/household/accept - Accept invitation",
+    "GET /api/notifications - Fetch notifications",
+    "POST /api/notifications/clear - Mark all notifications as read",
+    "GET /api/audit-log - Fetch audit logs"
+  ]
+}
