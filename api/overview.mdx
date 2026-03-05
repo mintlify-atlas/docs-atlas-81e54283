@@ -1,0 +1,209 @@
+---
+title: 'API Overview'
+description: 'Complete reference for the Home Manager REST API'
+---
+
+## Introduction
+
+The Home Manager API is a RESTful API that allows you to manage household tasks, bills, shopping lists, maintenance items, and more. All endpoints require authentication through Clerk.
+
+## Base URL
+
+All API requests should be made to:
+
+```
+https://your-domain.com/api
+```
+
+For local development:
+
+```
+http://localhost:3000/api
+```
+
+## Authentication
+
+All API endpoints require authentication using [Clerk](https://clerk.com). The API uses Clerk's server-side authentication to validate requests.
+
+### How Authentication Works
+
+- The API uses `@clerk/nextjs/server` for authentication
+- Each request is validated using `auth()` or `getAuth(req)` from Clerk
+- The authenticated user's `userId` and `email` are extracted from the session
+- Users are automatically associated with a household upon authentication
+
+### Required Headers
+
+When making requests from your frontend application, ensure Clerk's session token is included in the request headers. Clerk's client libraries handle this automatically.
+
+```javascript
+// Example using fetch with Clerk
+import { useAuth } from '@clerk/nextjs';
+
+const { getToken } = useAuth();
+const token = await getToken();
+
+fetch('/api/chores', {
+  headers: {
+    'Authorization': `Bearer ${token}`,
+  },
+});
+```
+
+## Household Context
+
+All resource endpoints (chores, bills, shopping, maintenance) automatically scope data to the authenticated user's household:
+
+- When you make a request, the API calls `getOrCreateHousehold(userId, email)`
+- If the user doesn't have a household, one is created automatically
+- All data operations are filtered by `householdId` to ensure data isolation
+
+## Common Response Formats
+
+### Success Response
+
+Most successful requests return JSON data:
+
+```json
+{
+  "id": "clx123...",
+  "name": "Item name",
+  "createdAt": "2024-03-15T10:30:00Z",
+  // ... other fields
+}
+```
+
+### Error Responses
+
+<ResponseField name="401 Unauthorized" type="string">
+  Returned when authentication fails or user session is invalid.
+</ResponseField>
+
+```json
+Unauthorized
+```
+
+<ResponseField name="400 Bad Request" type="string">
+  Returned when required fields are missing or invalid.
+</ResponseField>
+
+```json
+Missing fields
+```
+
+<ResponseField name="500 Internal Server Error" type="string">
+  Returned when an unexpected server error occurs.
+</ResponseField>
+
+```json
+Internal Server Error
+```
+
+## Error Handling
+
+All endpoints follow a consistent error handling pattern:
+
+- **401 Unauthorized**: User is not authenticated or session is invalid
+- **400 Bad Request**: Missing required fields or invalid data
+- **404 Not Found**: Resource not found or doesn't belong to user's household
+- **500 Internal Server Error**: Unexpected server error
+
+### Example Error Handling
+
+```javascript
+try {
+  const response = await fetch('/api/chores', {
+    method: 'POST',
+    body: JSON.stringify({ name: 'Task', assignee: 'John' }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      // Handle authentication error
+    } else if (response.status === 400) {
+      // Handle validation error
+    }
+  }
+
+  const data = await response.json();
+} catch (error) {
+  // Handle network errors
+}
+```
+
+## Rate Limiting
+
+Currently, there are no rate limits enforced on the API. However, it's recommended to implement client-side throttling for frequent operations.
+
+## Data Types
+
+### Common Fields
+
+Most resources include these common fields:
+
+<ParamField name="id" type="string" required>
+  Unique identifier (Prisma CUID)
+</ParamField>
+
+<ParamField name="householdId" type="string" required>
+  Reference to the household this resource belongs to
+</ParamField>
+
+<ParamField name="position" type="number">
+  Used for ordering items in lists
+</ParamField>
+
+<ParamField name="checked" type="boolean">
+  Whether the item is completed/checked (default: false)
+</ParamField>
+
+<ParamField name="createdAt" type="datetime">
+  Timestamp when the resource was created
+</ParamField>
+
+<ParamField name="updatedAt" type="datetime">
+  Timestamp when the resource was last updated
+</ParamField>
+
+## Pagination
+
+Most list endpoints do not implement pagination and return all items for the household. The audit log endpoint supports optional pagination.
+
+## Reordering Items
+
+Many endpoints (chores, bills, shopping, maintenance) support reordering items by position:
+
+```javascript
+// POST to the main endpoint with orderedIds
+fetch('/api/chores', {
+  method: 'POST',
+  body: JSON.stringify({
+    orderedIds: ['id1', 'id2', 'id3'] // New order
+  }),
+});
+```
+
+This updates the `position` field for each item based on array index.
+
+## Notifications
+
+When certain actions occur (deleting items, completing tasks), the API automatically creates notifications:
+
+- Completing a chore creates a "Chore Completed" notification
+- Paying a bill creates a "Bill Paid" notification
+- Completing a shopping item creates an "Item Removed" notification
+- Finishing maintenance creates a "Maintenance Completed" notification
+
+See the [Notifications API](/api/notifications-api) for details.
+
+## Next Steps
+
+Explore the specific API endpoints:
+
+- [Chores API](/api/chores-api) - Manage household chores
+- [Bills API](/api/bills-api) - Track and pay bills
+- [Shopping API](/api/shopping-api) - Manage shopping lists
+- [Maintenance API](/api/maintenance-api) - Track home maintenance
+- [Household API](/api/household-api) - Manage household members
+- [Notifications API](/api/notifications-api) - View and manage notifications
+- [Audit Log API](/api/audit-log-api) - Track user activities

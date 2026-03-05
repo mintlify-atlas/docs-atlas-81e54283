@@ -1,0 +1,168 @@
+---
+title: 'Authentication'
+description: 'Sign in, sign up, and manage your Home Manager account with Clerk'
+---
+
+## Overview
+
+Home Manager uses [Clerk](https://clerk.com) for secure authentication and user management. You can sign in with your email, social accounts, or other authentication methods supported by Clerk.
+
+## Getting Started
+
+### Sign Up
+
+When you first visit Home Manager, you'll see the authentication screen:
+
+1. Click **Sign up** if you're a new user
+2. Choose your preferred authentication method:
+   - Email and password
+   - Social authentication (Google, GitHub, etc.)
+3. Complete the registration process
+4. You'll be automatically redirected to the dashboard
+
+<Note>
+After signing up, Home Manager automatically creates a new household for you with the name based on your email (e.g., "john's Home"). You'll be assigned as the owner of this household.
+</Note>
+
+### Sign In
+
+Returning users can sign in using:
+
+1. Click **Sign in** on the homepage
+2. Enter your credentials or use social authentication
+3. You'll be redirected to your dashboard automatically
+
+## Household Initialization
+
+The first time you sign in, Home Manager automatically:
+
+- Creates a household for you
+- Assigns you as the **owner** role
+- Initializes your dashboard and settings
+
+If you've been invited to an existing household, you'll be automatically linked to that household instead.
+
+<Info>
+The household initialization process runs in the background on your first dashboard visit via the `/api/household/init` endpoint.
+</Info>
+
+## Account Management
+
+### Accessing Account Settings
+
+To manage your account details:
+
+1. Click on your **profile avatar** in the top-right corner of the navigation bar
+2. Select **Manage Account** from the dropdown menu
+3. This opens the Clerk user profile modal where you can:
+   - Update your name and profile picture
+   - Change your email address
+   - Update your password
+   - Manage connected social accounts
+   - Configure two-factor authentication
+
+### User Profile Display
+
+Your profile information is displayed throughout the app:
+
+- **Navbar**: Shows your full name and avatar
+- **Dashboard**: Personalized greeting with your first name
+- **Household**: Your name appears in the members list
+
+## Authentication Flow
+
+### Protected Routes
+
+All application routes (except the homepage) are protected by Clerk middleware. If you're not authenticated:
+
+1. You'll be automatically redirected to the sign-in page
+2. After successful authentication, you'll return to your intended destination
+
+<Warning>
+The middleware protects all routes except static files and Clerk's authentication pages. See `src/middleware.ts:7` for the exact configuration.
+</Warning>
+
+### Session Management
+
+Clerk handles session management automatically:
+
+- Sessions persist across browser tabs
+- Automatic token refresh
+- Secure cookie-based authentication
+- Session activity monitoring
+
+## Sign Out
+
+To sign out of your account:
+
+1. Click your **profile avatar** in the navbar
+2. Select **Sign Out** from the menu
+3. You'll be redirected to the homepage
+
+<Note>
+Signing out ends your session but does not affect your household or data. You can sign back in anytime to access your information.
+</Note>
+
+## Household Invitations
+
+If you've been invited to join an existing household:
+
+### Accepting an Invitation
+
+1. Sign up or sign in with the email address that received the invitation
+2. On your first visit to the **Household** page, you'll see an invitation banner
+3. Click **Accept** to join the household
+4. You'll be assigned the role specified in the invitation
+
+### Invitation Detection
+
+Home Manager automatically detects pending invitations by matching:
+
+- Your email address against pending household invites
+- Status: `pending` invitations in the database
+
+When you accept an invitation:
+
+- Your user ID is linked to the household member record
+- The invitation status changes to `accepted`
+- You gain access to all household data based on your role
+
+See the implementation in `src/app/lib/household.ts:14` for details.
+
+## Security Features
+
+### Authentication Protection
+
+- All API routes require authentication via Clerk's `auth()` function
+- User identity is verified on every request
+- Email addresses are validated before household operations
+
+### Data Isolation
+
+- Users can only access data from households they belong to
+- API endpoints verify household membership before returning data
+- Role-based permissions control what actions users can perform
+
+<Info>
+For more information about roles and permissions, see the [Roles & Permissions](/guide/roles-permissions) guide.
+</Info>
+
+## Troubleshooting
+
+### Can't Sign In
+
+- Verify your email and password are correct
+- Check if you're using the same authentication method you signed up with
+- Try resetting your password through the Clerk interface
+
+### Not Seeing My Household
+
+- Ensure you're signed in with the correct email address
+- Check the Household page for pending invitations
+- Contact your household owner if you haven't received an invitation
+
+### Profile Picture Not Updating
+
+- Profile pictures are managed through Clerk's user profile
+- Changes may take a few moments to propagate
+- Try refreshing your browser if the image doesn't update immediately

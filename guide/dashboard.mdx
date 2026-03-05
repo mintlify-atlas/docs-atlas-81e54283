@@ -1,0 +1,425 @@
+---
+title: 'Dashboard'
+description: 'Overview of the Home Manager dashboard, statistics, and recent activity'
+---
+
+## Overview
+
+The dashboard is your central hub in Home Manager. It provides a quick overview of your household's current status, including pending items, unpaid bills, and visual analytics.
+
+## Accessing the Dashboard
+
+After signing in, you're automatically redirected to the dashboard:
+
+```
+/dashboard
+```
+
+You can also navigate to the dashboard anytime by clicking the **Dashboard** tab in the navigation bar.
+
+<Note>
+The dashboard is the default landing page after authentication. See implementation at `src/app/page.tsx:17`.
+</Note>
+
+## Dashboard Components
+
+The dashboard consists of three main sections:
+
+1. **Dashboard Header** - Personalized greeting and date
+2. **Summary Cards** - Quick stats for all household categories
+3. **Bills Chart** - Visual representation of monthly bill data
+
+## Dashboard Header
+
+### Personalized Greeting
+
+The header displays a time-based greeting customized with your name:
+
+- **Morning** (before 12 PM): "Good morning, [Your Name]!"
+- **Afternoon** (12 PM - 6 PM): "Good afternoon, [Your Name]!"
+- **Evening** (after 6 PM): "Good evening, [Your Name]!"
+
+### Current Date
+
+Below the greeting, you'll see today's date in a readable format:
+
+```
+Wednesday, March 5, 2026
+```
+
+<Info>
+The greeting uses your first name from your Clerk profile. If no first name is set, it defaults to "there".
+</Info>
+
+**Implementation:**
+```typescript
+// src/app/(tabs)/dashboard/page.tsx:87
+const firstName = user?.firstName || "there";
+const greeting =
+  now.getHours() < 12
+    ? "Good morning"
+    : now.getHours() < 18
+    ? "Good afternoon"
+    : "Good evening";
+```
+
+## Summary Cards
+
+Summary cards provide at-a-glance statistics for your household:
+
+### Card Types
+
+The dashboard displays four summary cards:
+
+<Accordion title="Shopping Items">
+  **Icon:** 🛒 Shopping Cart
+  
+  **Shows:** Number of items currently on your shopping list
+  
+  **Metric:** Total count of unpurchased shopping items
+  
+  **Use Case:** Quickly see how many items you need to buy
+</Accordion>
+
+<Accordion title="Unpaid Bills">
+  **Icon:** 🧾 Receipt
+  
+  **Shows:** Number of bills that haven't been marked as paid
+  
+  **Metric:** Total count of unpaid bills
+  
+  **Use Case:** Track outstanding financial obligations
+</Accordion>
+
+<Accordion title="Pending Chores">
+  **Icon:** 🧹 Cleaning Services
+  
+  **Shows:** Number of chores that haven't been completed
+  
+  **Metric:** Total count of incomplete chores
+  
+  **Use Case:** See what household tasks need attention
+</Accordion>
+
+<Accordion title="Maintenance Tasks">
+  **Icon:** 🔧 Build
+  
+  **Shows:** Number of active maintenance tasks
+  
+  **Metric:** Total count of maintenance items
+  
+  **Use Case:** Keep track of home repairs and upkeep
+</Accordion>
+
+### Card Layout
+
+Summary cards are displayed in a responsive grid:
+
+- **Mobile (xs)**: 2 cards per row (6 columns each)
+- **Desktop (md+)**: 4 cards per row (3 columns each)
+
+<Info>
+Each card displays an icon, a descriptive label, and a large number representing the count. The design uses Material-UI's Paper component with elevation for visual depth.
+</Info>
+
+### Real-Time Data
+
+Summary card counts are fetched in real-time from dedicated count endpoints:
+
+```typescript
+// src/app/(tabs)/dashboard/page.tsx:52
+const endpoints = {
+  bills: "/api/bills/count",
+  chores: "/api/chores/count",
+  shopping: "/api/shopping/count",
+  maintenance: "/api/maintenance/count",
+};
+```
+
+All four counts are fetched in parallel for optimal performance.
+
+## Bills Chart
+
+### Visual Analytics
+
+The bills chart provides a visual representation of your monthly bill data:
+
+- **Chart Type**: Area chart (or bar chart, depending on implementation)
+- **Data Points**: Monthly bill totals over time
+- **Metrics Displayed**:
+  - Total bill amount per month
+  - Paid bills per month
+  - Visual comparison between months
+
+### Monthly Data
+
+The chart displays:
+
+```typescript
+interface MonthlyBill {
+  month: string;    // e.g., "2026-03"
+  total: number;    // Total bill amount
+  paid: number;     // Amount paid
+}
+```
+
+### Data Source
+
+Bill chart data is fetched from:
+
+```
+GET /api/bills/monthly
+```
+
+This endpoint returns an array of monthly bill aggregations for visualization.
+
+<Note>
+The bills chart uses lazy loading for better initial page performance. The chart component is loaded asynchronously: `src/components/dashboard/BillsChartLazy.tsx`.
+</Note>
+
+### Chart Features
+
+- **Responsive Design**: Adapts to screen size
+- **Interactive Tooltips**: Hover to see detailed information
+- **Color Coding**: Different colors for total vs. paid amounts
+- **Trend Analysis**: Spot patterns in your spending over time
+
+## Loading States
+
+### Initial Load
+
+When you first navigate to the dashboard:
+
+1. A **loading screen** is displayed
+2. The app initializes your household (if needed)
+3. Summary counts are fetched in parallel
+4. Monthly bill data is loaded
+5. The dashboard renders with all data
+
+<Info>
+The loading screen is a full-page spinner that ensures all data is ready before displaying the dashboard. See `src/components/shared/LoadingScreen.tsx`.
+</Info>
+
+### Background Initialization
+
+The dashboard triggers household initialization on first load:
+
+```typescript
+// src/app/(tabs)/dashboard/page.tsx:49
+await fetch("/api/household/init");
+```
+
+This ensures your household exists and is properly configured before displaying data.
+
+## Dashboard Behavior
+
+### Authentication Check
+
+The dashboard verifies authentication before rendering:
+
+```typescript
+// src/app/(tabs)/dashboard/page.tsx:35
+useEffect(() => {
+  if (isLoaded && !isSignedIn) {
+    router.push("/");
+  }
+}, [isLoaded, isSignedIn, router]);
+```
+
+If you're not signed in, you're automatically redirected to the homepage.
+
+### Data Refresh
+
+Dashboard data refreshes:
+
+- On page load
+- When navigating back to the dashboard
+- After household initialization
+
+<Warning>
+The dashboard does not auto-refresh while you're viewing it. Navigate away and back to see updated counts, or refresh your browser.
+</Warning>
+
+## Responsive Design
+
+### Mobile View
+
+On mobile devices:
+
+- Summary cards stack in 2-column layout
+- Header text scales down
+- Chart adjusts to screen width
+- Padding and spacing are optimized
+
+### Desktop View
+
+On larger screens:
+
+- Summary cards display in 4-column layout
+- Larger text and icons
+- More spacious layout
+- Chart expands to full width
+
+## Navigation from Dashboard
+
+From the dashboard, you can navigate to:
+
+- **Bills**: Click the Bills tab or summary card
+- **Chores**: Click the Chores tab or summary card
+- **Shopping**: Click the Shopping tab or summary card
+- **Maintenance**: Click the Maintenance tab or summary card
+- **Household**: Manage members and settings
+
+<Info>
+While the summary cards don't have click handlers in the current implementation, you can use the navigation tabs to access each section.
+</Info>
+
+## Performance Optimization
+
+### Parallel Data Fetching
+
+The dashboard uses `Promise.all()` to fetch multiple counts simultaneously:
+
+```typescript
+// src/app/(tabs)/dashboard/page.tsx:59
+const data = await Promise.all(
+  Object.entries(endpoints).map(async ([key, url]) => {
+    const res = await fetch(url);
+    const json = await res.json();
+    return [key, json.count ?? 0];
+  })
+);
+```
+
+This reduces load time compared to sequential requests.
+
+### Lazy Loading
+
+The bills chart component is lazy-loaded:
+
+- Reduces initial bundle size
+- Faster time to interactive
+- Chart loads asynchronously after initial render
+
+### Error Handling
+
+If data fetching fails:
+
+- Errors are logged to the console
+- Dashboard continues to render with default values (counts of 0)
+- No error message is displayed to the user
+
+<Note>
+The dashboard gracefully handles API failures by defaulting to zero counts. This ensures the UI remains functional even if backend services are temporarily unavailable.
+</Note>
+
+## Customization
+
+### Available Customizations
+
+While the dashboard doesn't have built-in customization options, you can:
+
+- View different time periods by navigating to specific pages
+- Filter data through the main navigation tabs
+- Adjust chart display by modifying component props (developers)
+
+### Future Enhancements
+
+Potential dashboard features:
+
+- Customizable widgets
+- Date range selectors
+- Additional chart types
+- Pinned or favorited items
+- Activity feed integration
+- Quick action buttons
+
+## Troubleshooting
+
+### Dashboard Not Loading
+
+**Symptoms:**
+- Stuck on loading screen
+- Blank page after sign-in
+
+**Solutions:**
+1. Refresh your browser
+2. Check your internet connection
+3. Clear browser cache and cookies
+4. Try signing out and back in
+
+### Counts Showing Zero
+
+**Cause:**
+- You may not have any items in those categories yet
+- API might have failed to fetch data
+
+**Solution:**
+- Add items to each category to see counts increase
+- Check browser console for API errors
+- Ensure you're connected to a household
+
+### Chart Not Displaying
+
+**Possible Issues:**
+- No bill data available yet
+- Chart component failed to load
+- JavaScript error in browser
+
+**Resolution:**
+- Add some bills to generate chart data
+- Check browser console for errors
+- Try refreshing the page
+
+## Technical Implementation
+
+### Main Dashboard File
+
+```
+src/app/(tabs)/dashboard/page.tsx
+```
+
+This is the main dashboard page component.
+
+### Component Structure
+
+```
+Dashboard Page
+├── DashboardHeader (greeting + date)
+├── SummaryCards (4 statistic cards)
+└── BillsChart (monthly bill visualization)
+```
+
+### Data Flow
+
+1. User navigates to `/dashboard`
+2. Authentication is verified
+3. Household is initialized via `/api/household/init`
+4. Four count endpoints are called in parallel
+5. Monthly bill data is fetched
+6. Dashboard renders with all data
+
+### State Management
+
+The dashboard manages state locally using React hooks:
+
+```typescript
+const [counts, setCounts] = useState({
+  bills: 0,
+  chores: 0,
+  shopping: 0,
+  maintenance: 0,
+});
+
+const [monthlyData, setMonthlyData] = useState<MonthlyBill[]>([]);
+const [loadingItems, setLoadingItems] = useState(true);
+```
+
+### Styling
+
+The dashboard uses Material-UI components with custom styling:
+
+- Container for page layout
+- Grid for responsive card layout
+- Box for spacing and alignment
+- Theme-based colors and typography

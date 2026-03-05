@@ -1,0 +1,178 @@
+---
+title: Introduction to Home Manager
+description: A comprehensive household management platform for organizing chores, bills, shopping lists, and maintenance tasks
+---
+
+## What is Home Manager?
+
+Home Manager is an all-in-one household management application that simplifies the coordination of daily household tasks, financial obligations, and collaborative living. Built with modern web technologies, it provides a centralized platform for families, roommates, and shared living spaces to stay organized and productive.
+
+## Who is Home Manager for?
+
+Home Manager is designed for:
+
+- **Families** managing multiple responsibilities across household members
+- **Roommates** coordinating shared expenses and chores
+- **Property managers** tracking maintenance and tenant-related tasks
+- **Anyone** looking to streamline their household operations
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Household Management" icon="users">
+    Create households, invite members with role-based access (Owner, Member, Guest), and manage permissions seamlessly
+  </Card>
+  
+  <Card title="Chores Tracking" icon="broom">
+    Assign chores to household members, set recurrence patterns, and track completion status
+  </Card>
+  
+  <Card title="Bill Management" icon="receipt">
+    Track bills with due dates, amounts, and categories. Monitor payment history with monthly analytics
+  </Card>
+  
+  <Card title="Shopping Lists" icon="cart-shopping">
+    Collaborative shopping lists with categories, drag-and-drop reordering, and real-time synchronization
+  </Card>
+  
+  <Card title="Maintenance Logging" icon="wrench">
+    Document home maintenance tasks, set recurring maintenance schedules, and track completion
+  </Card>
+  
+  <Card title="Activity Feed" icon="bell">
+    Real-time notifications for household activities, task assignments, and important updates
+  </Card>
+</CardGroup>
+
+## Technology Stack
+
+Home Manager is built with a modern, production-ready technology stack:
+
+- **Frontend**: Next.js 15 (App Router) with React 19 and TypeScript
+- **UI Framework**: Material-UI (MUI) v7 with Emotion styling
+- **Authentication**: Clerk for secure user management and SSO
+- **Database**: PostgreSQL with Prisma ORM
+- **Deployment**: Optimized for Vercel, Docker, or custom hosting
+
+## Core Benefits
+
+### Centralized Organization
+
+No more scattered notes, forgotten tasks, or missed bill payments. Home Manager consolidates all household management into a single, accessible platform.
+
+### Role-Based Access Control
+
+Secure permission system ensures the right people have the right access:
+
+| Role   | View | Edit | Invite Members | Delete Household |
+|--------|------|------|----------------|------------------|
+| Owner  | ✅   | ✅   | ✅            | ✅               |
+| Member | ✅   | ✅   | ❌            | ❌               |
+| Guest  | ✅   | ❌   | ❌            | ❌               |
+
+### Real-Time Collaboration
+
+Multiple household members can work simultaneously with live updates, ensuring everyone stays on the same page.
+
+### Mobile-Optimized
+
+Responsive design works seamlessly across desktop, tablet, and mobile devices with Progressive Web App (PWA) support.
+
+### Data Privacy
+
+Your household data remains private and secure with enterprise-grade authentication and database security.
+
+## Architecture Overview
+
+Home Manager follows a modern full-stack architecture:
+
+```
+┌─────────────────────────────────────────┐
+│         Client (Next.js/React)          │
+│  • Material-UI Components               │
+│  • Real-time State Management           │
+│  • Clerk Authentication Client          │
+└─────────────┬───────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────┐
+│       API Routes (Next.js)              │
+│  • /api/household/*                     │
+│  • /api/chores/*                        │
+│  • /api/bills/*                         │
+│  • /api/shopping/*                      │
+│  • /api/maintenance/*                   │
+└─────────────┬───────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────┐
+│      Prisma ORM + PostgreSQL            │
+│  • Households & Members                 │
+│  • Tasks & Items                        │
+│  • Audit Logs                           │
+└─────────────────────────────────────────┘
+```
+
+## Use Cases
+
+### Family Household
+
+A family of four uses Home Manager to:
+- Assign weekly chores to children with completion tracking
+- Track all household bills with payment reminders
+- Maintain a shared grocery shopping list
+- Log home maintenance activities (HVAC filter changes, lawn care, etc.)
+
+### Shared Apartment
+
+Three roommates use Home Manager to:
+- Split and track shared expenses (utilities, rent, groceries)
+- Rotate cleaning responsibilities fairly
+- Coordinate household purchases
+- Maintain transparency with activity logs
+
+### Property Management
+
+A property manager uses Home Manager to:
+- Track maintenance requests across multiple properties
+- Schedule recurring maintenance tasks
+- Coordinate with maintenance staff
+- Keep detailed logs for property records
+
+## Getting Started
+
+Ready to simplify your household management? Choose your path:
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get up and running in minutes with our guided setup
+  </Card>
+  
+  <Card title="Self-Host Installation" icon="server" href="/installation">
+    Deploy Home Manager on your own infrastructure
+  </Card>
+</CardGroup>
+
+## Open Source & Community
+
+Home Manager is an open-source project available on [GitHub](https://github.com/Alexander-Malpica/home-manager-app). Contributions, feature requests, and bug reports are welcome.
+
+## Next Steps
+
+<Steps>
+  <Step title="Create Your Account">
+    Follow the [Quick Start Guide](/quickstart) to create your first household
+  </Step>
+  
+  <Step title="Invite Members">
+    Add family members or roommates to your household
+  </Step>
+  
+  <Step title="Add Your First Tasks">
+    Start organizing with chores, bills, or shopping lists
+  </Step>
+  
+  <Step title="Explore Features">
+    Discover advanced features like recurring tasks and analytics
+  </Step>
+</Steps>

@@ -1,0 +1,428 @@
+---
+title: 'Chores API'
+description: 'Manage household chores and task assignments'
+---
+
+## Overview
+
+The Chores API allows you to create, read, update, delete, and reorder household chores. Each chore can be assigned to a household member and includes optional descriptions.
+
+## Endpoints
+
+### Get All Chores
+
+<ParamField path="GET /api/chores" type="endpoint">
+  Retrieves all chores for the authenticated user's household, ordered by position.
+</ParamField>
+
+**Authentication**: Required
+
+**Response**
+
+<ResponseField name="chores" type="array">
+  Array of chore objects
+</ResponseField>
+
+<Expandable title="Chore Object Fields">
+  <ResponseField name="id" type="string">
+    Unique identifier
+  </ResponseField>
+  
+  <ResponseField name="householdId" type="string">
+    ID of the household this chore belongs to
+  </ResponseField>
+  
+  <ResponseField name="name" type="string">
+    Name of the chore
+  </ResponseField>
+  
+  <ResponseField name="assignee" type="string">
+    Person assigned to this chore
+  </ResponseField>
+  
+  <ResponseField name="description" type="string">
+    Optional description of the chore
+  </ResponseField>
+  
+  <ResponseField name="position" type="number">
+    Position for ordering in the list
+  </ResponseField>
+  
+  <ResponseField name="checked" type="boolean">
+    Whether the chore is completed (default: false)
+  </ResponseField>
+  
+  <ResponseField name="createdAt" type="datetime">
+    Creation timestamp
+  </ResponseField>
+  
+  <ResponseField name="updatedAt" type="datetime">
+    Last update timestamp
+  </ResponseField>
+</Expandable>
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/chores \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/chores', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${clerkToken}`,
+  },
+});
+
+const chores = await response.json();
+```
+</CodeGroup>
+
+**Example Response**
+
+```json
+[
+  {
+    "id": "clx123abc",
+    "householdId": "clx456def",
+    "name": "Vacuum living room",
+    "assignee": "John",
+    "description": "Don't forget under the couch",
+    "position": 0,
+    "checked": false,
+    "createdAt": "2024-03-15T10:00:00Z",
+    "updatedAt": "2024-03-15T10:00:00Z"
+  },
+  {
+    "id": "clx789ghi",
+    "householdId": "clx456def",
+    "name": "Take out trash",
+    "assignee": "Sarah",
+    "description": "",
+    "position": 1,
+    "checked": false,
+    "createdAt": "2024-03-15T11:00:00Z",
+    "updatedAt": "2024-03-15T11:00:00Z"
+  }
+]
+```
+
+---
+
+### Create or Reorder Chores
+
+<ParamField path="POST /api/chores" type="endpoint">
+  Creates a new chore or reorders existing chores.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body (Create)**
+
+<ParamField name="name" type="string" required>
+  Name of the chore
+</ParamField>
+
+<ParamField name="assignee" type="string" required>
+  Person assigned to this chore
+</ParamField>
+
+<ParamField name="description" type="string" default="">
+  Optional description of the chore
+</ParamField>
+
+**Request Body (Reorder)**
+
+<ParamField name="orderedIds" type="array" required>
+  Array of chore IDs in the desired order
+</ParamField>
+
+<CodeGroup>
+```bash Create Chore
+curl -X POST https://your-domain.com/api/chores \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Wash dishes",
+    "assignee": "John",
+    "description": "Include pots and pans"
+  }'
+```
+
+```bash Reorder Chores
+curl -X POST https://your-domain.com/api/chores \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderedIds": ["clx789ghi", "clx123abc", "clx456def"]
+  }'
+```
+
+```javascript Create Chore
+const response = await fetch('/api/chores', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${clerkToken}`,
+  },
+  body: JSON.stringify({
+    name: 'Wash dishes',
+    assignee: 'John',
+    description: 'Include pots and pans',
+  }),
+});
+
+const newChore = await response.json();
+```
+
+```javascript Reorder Chores
+const response = await fetch('/api/chores', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${clerkToken}`,
+  },
+  body: JSON.stringify({
+    orderedIds: ['clx789ghi', 'clx123abc', 'clx456def'],
+  }),
+});
+```
+</CodeGroup>
+
+**Response (Create)**
+
+```json
+{
+  "id": "clxnew123",
+  "householdId": "clx456def",
+  "name": "Wash dishes",
+  "assignee": "John",
+  "description": "Include pots and pans",
+  "position": 2,
+  "checked": false,
+  "createdAt": "2024-03-15T12:00:00Z",
+  "updatedAt": "2024-03-15T12:00:00Z"
+}
+```
+
+**Response (Reorder)**
+
+```
+Positions updated
+```
+
+Status: `200 OK`
+
+---
+
+### Update Chore
+
+<ParamField path="POST /api/chores/update" type="endpoint">
+  Updates an existing chore's details.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="id" type="string" required>
+  ID of the chore to update
+</ParamField>
+
+<ParamField name="name" type="string" required>
+  Updated name of the chore
+</ParamField>
+
+<ParamField name="assignee" type="string" required>
+  Updated assignee
+</ParamField>
+
+<ParamField name="description" type="string" default="">
+  Updated description
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/chores/update \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "clx123abc",
+    "name": "Deep clean living room",
+    "assignee": "Sarah",
+    "description": "Vacuum and dust all surfaces"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/chores/update', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${clerkToken}`,
+  },
+  body: JSON.stringify({
+    id: 'clx123abc',
+    name: 'Deep clean living room',
+    assignee: 'Sarah',
+    description: 'Vacuum and dust all surfaces',
+  }),
+});
+
+const result = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "count": 1
+}
+```
+
+Returns the number of records updated (should be 1 if successful).
+
+---
+
+### Delete Chore
+
+<ParamField path="POST /api/chores/delete" type="endpoint">
+  Deletes a chore and creates a completion notification.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="id" type="string" required>
+  ID of the chore to delete
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/chores/delete \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "clx123abc"}'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/chores/delete', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${clerkToken}`,
+  },
+  body: JSON.stringify({ id: 'clx123abc' }),
+});
+
+const deletedChore = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "id": "clx123abc",
+  "householdId": "clx456def",
+  "name": "Vacuum living room",
+  "assignee": "John",
+  "description": "Don't forget under the couch",
+  "position": 0,
+  "checked": false,
+  "createdAt": "2024-03-15T10:00:00Z",
+  "updatedAt": "2024-03-15T10:00:00Z"
+}
+```
+
+<Note>
+  When a chore is deleted, a notification is automatically created with:
+  - **Type**: "chores"
+  - **Title**: "Chore Completed"
+  - **Body**: "You completed: [chore name]"
+</Note>
+
+---
+
+### Get Chores Count
+
+<ParamField path="GET /api/chores/count" type="endpoint">
+  Returns the total number of chores for the household.
+</ParamField>
+
+**Authentication**: Required
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/chores/count \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/chores/count', {
+  headers: {
+    'Authorization': `Bearer ${clerkToken}`,
+  },
+});
+
+const { count } = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "count": 5
+}
+```
+
+## Error Responses
+
+All endpoints may return these error responses:
+
+<ResponseField name="401 Unauthorized">
+  User is not authenticated
+</ResponseField>
+
+```
+Unauthorized
+```
+
+<ResponseField name="400 Bad Request">
+  Missing required fields
+</ResponseField>
+
+```
+Missing fields
+```
+
+or
+
+```
+Missing required fields
+```
+
+or
+
+```
+Missing or invalid ID
+```
+
+<ResponseField name="500 Internal Server Error">
+  Unexpected server error
+</ResponseField>
+
+```
+Internal Server Error
+```
+
+## Source Code Reference
+
+- Main routes: `~/workspace/source/src/app/api/chores/route.ts:19`
+- Count endpoint: `~/workspace/source/src/app/api/chores/count/route.ts:19`
+- Delete endpoint: `~/workspace/source/src/app/api/chores/delete/route.ts:21`
+- Update endpoint: `~/workspace/source/src/app/api/chores/update/route.ts:19`

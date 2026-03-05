@@ -1,0 +1,501 @@
+---
+title: 'Household API'
+description: 'Manage household initialization, members, and invitations'
+---
+
+## Overview
+
+The Household API enables you to manage household membership, including initialization, inviting members, accepting/declining invitations, and managing member roles.
+
+## Endpoints
+
+### Initialize Household
+
+<ParamField path="GET /api/household/init" type="endpoint">
+  Gets or creates a household for the authenticated user.
+</ParamField>
+
+**Authentication**: Required
+
+**Response**
+
+<ResponseField name="householdId" type="string">
+  The ID of the user's household (created if it doesn't exist)
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/household/init \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/household/init');
+const { householdId } = await response.json();
+```
+</CodeGroup>
+
+**Example Response**
+
+```json
+{
+  "householdId": "clx456def"
+}
+```
+
+<Note>
+  This endpoint calls `getOrCreateHousehold(userId, email)` which automatically creates a household if the user doesn't have one.
+</Note>
+
+---
+
+### Get Household Members
+
+<ParamField path="GET /api/household/members" type="endpoint">
+  Retrieves all members of the user's household, including pending invitations.
+</ParamField>
+
+**Authentication**: Required
+
+**Response**
+
+<ResponseField name="members" type="array">
+  Array of household member objects
+</ResponseField>
+
+<ResponseField name="trueOwnerId" type="string">
+  User ID of the household owner (first owner by ID)
+</ResponseField>
+
+<ResponseField name="trueOwnerEmail" type="string">
+  Email address of the household owner
+</ResponseField>
+
+<Expandable title="Member Object Fields">
+  <ResponseField name="id" type="string">
+    Unique member record ID
+  </ResponseField>
+  
+  <ResponseField name="householdId" type="string">
+    ID of the household
+  </ResponseField>
+  
+  <ResponseField name="userId" type="string" nullable>
+    Clerk user ID (null for pending invitations)
+  </ResponseField>
+  
+  <ResponseField name="invitedEmail" type="string" nullable>
+    Email of invited user (null for accepted members)
+  </ResponseField>
+  
+  <ResponseField name="role" type="string">
+    Member role: "owner", "member", or "guest"
+  </ResponseField>
+  
+  <ResponseField name="status" type="string">
+    Status: "accepted" or "pending"
+  </ResponseField>
+  
+  <ResponseField name="name" type="string">
+    Display name (fetched from Clerk or email)
+  </ResponseField>
+  
+  <ResponseField name="createdAt" type="datetime">
+    When the member was added
+  </ResponseField>
+</Expandable>
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/household/members \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/household/members');
+const { members, trueOwnerId, trueOwnerEmail } = await response.json();
+```
+</CodeGroup>
+
+**Example Response**
+
+```json
+{
+  "members": [
+    {
+      "id": "clxmem1",
+      "householdId": "clx456def",
+      "userId": "user_abc123",
+      "invitedEmail": null,
+      "role": "owner",
+      "status": "accepted",
+      "name": "John Doe",
+      "createdAt": "2024-03-01T10:00:00Z"
+    },
+    {
+      "id": "clxmem2",
+      "householdId": "clx456def",
+      "userId": "user_xyz789",
+      "invitedEmail": null,
+      "role": "member",
+      "status": "accepted",
+      "name": "Sarah Smith",
+      "createdAt": "2024-03-05T14:30:00Z"
+    },
+    {
+      "id": "clxmem3",
+      "householdId": "clx456def",
+      "userId": null,
+      "invitedEmail": "pending@example.com",
+      "role": "member",
+      "status": "pending",
+      "name": "pending@example.com",
+      "createdAt": "2024-03-10T09:00:00Z"
+    }
+  ],
+  "trueOwnerId": "user_abc123",
+  "trueOwnerEmail": "john@example.com"
+}
+```
+
+---
+
+### Manage Household Members
+
+<ParamField path="POST /api/household/members" type="endpoint">
+  Multi-purpose endpoint for inviting members, updating roles, and removing members.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body (Invite Member)**
+
+<ParamField name="email" type="string" required>
+  Email address to invite
+</ParamField>
+
+**Request Body (Update Role)**
+
+<ParamField name="id" type="string" required>
+  Member record ID
+</ParamField>
+
+<ParamField name="role" type="string" required>
+  New role: "owner", "member", or "guest"
+</ParamField>
+
+**Request Body (Remove Member)**
+
+<ParamField name="id" type="string" required>
+  Member record ID
+</ParamField>
+
+<ParamField name="remove" type="boolean" required>
+  Set to `true` to remove the member
+</ParamField>
+
+**Request Body (Self-Removal)**
+
+<ParamField name="removeSelf" type="boolean" required>
+  Set to `true` to leave the household
+</ParamField>
+
+<CodeGroup>
+```bash Invite Member
+curl -X POST https://your-domain.com/api/household/members \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "newuser@example.com"}'
+```
+
+```bash Update Role
+curl -X POST https://your-domain.com/api/household/members \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "clxmem2", "role": "owner"}'
+```
+
+```bash Remove Member
+curl -X POST https://your-domain.com/api/household/members \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "clxmem3", "remove": true}'
+```
+
+```bash Leave Household
+curl -X POST https://your-domain.com/api/household/members \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"removeSelf": true}'
+```
+
+```javascript Invite Member
+const response = await fetch('/api/household/members', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: 'newuser@example.com' }),
+});
+```
+</CodeGroup>
+
+**Response (Invite)**
+
+```json
+{
+  "id": "clxmem4",
+  "householdId": "clx456def",
+  "invitedEmail": "newuser@example.com",
+  "role": "member",
+  "status": "pending",
+  "createdAt": "2024-03-15T12:00:00Z"
+}
+```
+
+If already invited:
+
+```json
+{
+  "message": "Already invited"
+}
+```
+
+**Response (Update Role)**
+
+```json
+{
+  "message": "Role updated"
+}
+```
+
+**Response (Remove)**
+
+```json
+{
+  "message": "Member removed"
+}
+```
+
+**Response (Self-Removal)**
+
+```json
+{
+  "message": "You have exited the household"
+}
+```
+
+---
+
+### Check Invite Status
+
+<ParamField path="GET /api/household/invite-status" type="endpoint">
+  Checks if the authenticated user has any pending household invitations.
+</ParamField>
+
+**Authentication**: Required
+
+**Response**
+
+<ResponseField name="hasInvite" type="boolean">
+  Whether the user has a pending invitation
+</ResponseField>
+
+<ResponseField name="householdId" type="string" optional>
+  ID of the household (if invited)
+</ResponseField>
+
+<ResponseField name="inviteId" type="string" optional>
+  ID of the invitation record (if invited)
+</ResponseField>
+
+<ResponseField name="householdName" type="string" optional>
+  Name of the household (if invited)
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/household/invite-status \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/household/invite-status');
+const inviteData = await response.json();
+```
+</CodeGroup>
+
+**Example Response (No Invite)**
+
+```json
+{
+  "hasInvite": false
+}
+```
+
+**Example Response (Has Invite)**
+
+```json
+{
+  "hasInvite": true,
+  "householdId": "clx456def",
+  "inviteId": "clxmem5",
+  "householdName": "Smith Family"
+}
+```
+
+---
+
+### Accept Invitation
+
+<ParamField path="POST /api/household/accept" type="endpoint">
+  Accepts a pending household invitation.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="inviteId" type="string" required>
+  ID of the invitation to accept
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/household/accept \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"inviteId": "clxmem5"}'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/household/accept', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ inviteId: 'clxmem5' }),
+});
+
+const result = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "success": true
+}
+```
+
+<Note>
+  When accepting an invitation, the member record is updated with the user's `userId` and the `status` is changed to "accepted".
+</Note>
+
+---
+
+### Decline Invitation
+
+<ParamField path="POST /api/household/decline" type="endpoint">
+  Declines and deletes a pending household invitation.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="inviteId" type="string" required>
+  ID of the invitation to decline
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/household/decline \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"inviteId": "clxmem5"}'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/household/decline', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ inviteId: 'clxmem5' }),
+});
+
+const result = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "success": true
+}
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  User is not authenticated
+</ResponseField>
+
+```
+Unauthorized
+```
+
+<ResponseField name="400 Bad Request">
+  Missing or invalid parameters
+</ResponseField>
+
+```
+Missing or invalid invite ID
+```
+
+or
+
+```
+Invalid role
+```
+
+or
+
+```
+Invalid request
+```
+
+<ResponseField name="404 Not Found">
+  Household not found
+</ResponseField>
+
+```
+No household found
+```
+
+<ResponseField name="500 Internal Server Error">
+  Unexpected server error
+</ResponseField>
+
+```
+Internal Server Error
+```
+
+or
+
+```
+Failed to verify user
+```
+
+## Member Roles
+
+The API supports three member roles:
+
+- **owner**: Full access, can manage members and settings
+- **member**: Standard access, can view and edit household data
+- **guest**: Limited access (implementation-dependent)
+
+## Source Code Reference
+
+- Initialize: `~/workspace/source/src/app/api/household/init/route.ts:4`
+- Members: `~/workspace/source/src/app/api/household/members/route.ts:12`
+- Invite status: `~/workspace/source/src/app/api/household/invite-status/route.ts:5`
+- Accept: `~/workspace/source/src/app/api/household/accept/route.ts:5`
+- Decline: `~/workspace/source/src/app/api/household/decline/route.ts:5`

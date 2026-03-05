@@ -1,0 +1,385 @@
+---
+title: 'Maintenance API'
+description: 'Track home maintenance tasks and repairs'
+---
+
+## Overview
+
+The Maintenance API allows you to manage home maintenance tasks, including repairs, scheduled maintenance, and home improvements. Each item includes a title, category, and optional description.
+
+## Endpoints
+
+### Get All Maintenance Items
+
+<ParamField path="GET /api/maintenance" type="endpoint">
+  Retrieves all maintenance items for the authenticated user's household, ordered by position.
+</ParamField>
+
+**Authentication**: Required
+
+**Response**
+
+<ResponseField name="items" type="array">
+  Array of maintenance item objects
+</ResponseField>
+
+<Expandable title="Maintenance Item Fields">
+  <ResponseField name="id" type="string">
+    Unique identifier
+  </ResponseField>
+  
+  <ResponseField name="householdId" type="string">
+    ID of the household this item belongs to
+  </ResponseField>
+  
+  <ResponseField name="title" type="string">
+    Title of the maintenance task
+  </ResponseField>
+  
+  <ResponseField name="category" type="string">
+    Maintenance category (e.g., "Plumbing", "HVAC", "Electrical")
+  </ResponseField>
+  
+  <ResponseField name="description" type="string">
+    Optional detailed description
+  </ResponseField>
+  
+  <ResponseField name="position" type="number">
+    Position for ordering in the list
+  </ResponseField>
+  
+  <ResponseField name="checked" type="boolean">
+    Whether the task is completed (default: false)
+  </ResponseField>
+  
+  <ResponseField name="createdAt" type="datetime">
+    Creation timestamp
+  </ResponseField>
+  
+  <ResponseField name="updatedAt" type="datetime">
+    Last update timestamp
+  </ResponseField>
+</Expandable>
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/maintenance \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/maintenance');
+const items = await response.json();
+```
+</CodeGroup>
+
+**Example Response**
+
+```json
+[
+  {
+    "id": "clx123abc",
+    "householdId": "clx456def",
+    "title": "Replace air filter",
+    "category": "HVAC",
+    "description": "Change filter in main unit",
+    "position": 0,
+    "checked": false,
+    "createdAt": "2024-03-15T10:00:00Z",
+    "updatedAt": "2024-03-15T10:00:00Z"
+  },
+  {
+    "id": "clx789ghi",
+    "householdId": "clx456def",
+    "title": "Fix leaky faucet",
+    "category": "Plumbing",
+    "description": "Kitchen sink drips",
+    "position": 1,
+    "checked": false,
+    "createdAt": "2024-03-15T11:00:00Z",
+    "updatedAt": "2024-03-15T11:00:00Z"
+  }
+]
+```
+
+---
+
+### Create or Reorder Maintenance Items
+
+<ParamField path="POST /api/maintenance" type="endpoint">
+  Creates a new maintenance item or reorders existing items.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body (Create)**
+
+<ParamField name="title" type="string" required>
+  Title of the maintenance task
+</ParamField>
+
+<ParamField name="category" type="string" required>
+  Maintenance category
+</ParamField>
+
+<ParamField name="description" type="string" default="">
+  Optional detailed description
+</ParamField>
+
+**Request Body (Reorder)**
+
+<ParamField name="orderedIds" type="array" required>
+  Array of item IDs in the desired order
+</ParamField>
+
+<CodeGroup>
+```bash Create Item
+curl -X POST https://your-domain.com/api/maintenance \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Paint garage door",
+    "category": "Exterior",
+    "description": "Use weather-resistant paint"
+  }'
+```
+
+```bash Reorder Items
+curl -X POST https://your-domain.com/api/maintenance \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderedIds": ["clx789ghi", "clx123abc", "clxnew123"]
+  }'
+```
+
+```javascript Create Item
+const response = await fetch('/api/maintenance', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    title: 'Paint garage door',
+    category: 'Exterior',
+    description: 'Use weather-resistant paint',
+  }),
+});
+
+const newItem = await response.json();
+```
+</CodeGroup>
+
+**Response (Create)**
+
+```json
+{
+  "id": "clxnew123",
+  "householdId": "clx456def",
+  "title": "Paint garage door",
+  "category": "Exterior",
+  "description": "Use weather-resistant paint",
+  "position": 2,
+  "checked": false,
+  "createdAt": "2024-03-15T12:00:00Z",
+  "updatedAt": "2024-03-15T12:00:00Z"
+}
+```
+
+**Response (Reorder)**
+
+```
+Positions updated
+```
+
+Status: `200 OK`
+
+---
+
+### Update Maintenance Item
+
+<ParamField path="POST /api/maintenance/update" type="endpoint">
+  Updates an existing maintenance item's details.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="id" type="string" required>
+  ID of the item to update
+</ParamField>
+
+<ParamField name="title" type="string" required>
+  Updated title
+</ParamField>
+
+<ParamField name="category" type="string" required>
+  Updated category
+</ParamField>
+
+<ParamField name="description" type="string" default="">
+  Updated description
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/maintenance/update \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "clx123abc",
+    "title": "Replace HVAC filter",
+    "category": "HVAC",
+    "description": "Use MERV 11 filter"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/maintenance/update', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    id: 'clx123abc',
+    title: 'Replace HVAC filter',
+    category: 'HVAC',
+    description: 'Use MERV 11 filter',
+  }),
+});
+
+const result = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "count": 1
+}
+```
+
+---
+
+### Delete Maintenance Item
+
+<ParamField path="POST /api/maintenance/delete" type="endpoint">
+  Deletes (marks as completed) a maintenance item and creates a notification.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="id" type="string" required>
+  ID of the item to delete
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/maintenance/delete \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "clx123abc"}'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/maintenance/delete', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ id: 'clx123abc' }),
+});
+
+const deletedItem = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "id": "clx123abc",
+  "householdId": "clx456def",
+  "title": "Replace air filter",
+  "category": "HVAC",
+  "description": "Change filter in main unit",
+  "position": 0,
+  "checked": false,
+  "createdAt": "2024-03-15T10:00:00Z",
+  "updatedAt": "2024-03-15T10:00:00Z"
+}
+```
+
+<Note>
+  When a maintenance item is deleted, a notification is automatically created with:
+  - **Type**: "maintenance"
+  - **Title**: "Maintenance Completed"
+  - **Body**: "Task completed: [title]"
+</Note>
+
+---
+
+### Get Maintenance Count
+
+<ParamField path="GET /api/maintenance/count" type="endpoint">
+  Returns the total number of maintenance items for the household.
+</ParamField>
+
+**Authentication**: Required
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/maintenance/count \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/maintenance/count');
+const { count } = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "count": 4
+}
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  User is not authenticated
+</ResponseField>
+
+```
+Unauthorized
+```
+
+<ResponseField name="400 Bad Request">
+  Missing required fields
+</ResponseField>
+
+```
+Missing fields
+```
+
+or
+
+```
+Missing ID
+```
+
+<ResponseField name="500 Internal Server Error">
+  Unexpected server error
+</ResponseField>
+
+```
+Internal Server Error
+```
+
+## Source Code Reference
+
+- Main routes: `~/workspace/source/src/app/api/maintenance/route.ts:19`
+- Count endpoint: `~/workspace/source/src/app/api/maintenance/count/route.ts:19`
+- Delete endpoint: `~/workspace/source/src/app/api/maintenance/delete/route.ts:20`
+- Update endpoint: `~/workspace/source/src/app/api/maintenance/update/route.ts:19`

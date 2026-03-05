@@ -1,0 +1,281 @@
+---
+title: 'Roles & Permissions'
+description: 'Understanding user roles and access control in Home Manager'
+---
+
+## Overview
+
+Home Manager uses a role-based access control system to manage what users can do within a household. There are three distinct roles: **Owner**, **Member**, and **Guest**.
+
+## Role Types
+
+### Owner
+
+The Owner role has full administrative control over the household.
+
+**Capabilities:**
+- Create, edit, and delete all household items (bills, chores, shopping, maintenance)
+- Invite new members to the household
+- Change member roles
+- Remove members from the household
+- View audit logs
+- Access all household data and settings
+
+<Note>
+The first user who creates a household is automatically assigned the Owner role. This "true owner" is identified by a crown icon (👑) in the household members list.
+</Note>
+
+**Multiple Owners:**
+- A household can have multiple owners
+- The true owner (first owner) cannot be removed by other owners
+- Only the true owner or other owners can promote members to owner status
+
+### Member
+
+Members have editing permissions and can manage household items.
+
+**Capabilities:**
+- Create, edit, and delete household items (bills, chores, shopping, maintenance)
+- View all household data
+- View household members
+- Cannot invite new members
+- Cannot change roles
+- Cannot remove other members
+- Can leave the household voluntarily
+
+<Info>
+Members have the same item management permissions as owners, but lack administrative control over household membership and roles.
+</Info>
+
+### Guest
+
+Guests have read-only access to household information.
+
+**Capabilities:**
+- View household items (bills, chores, shopping, maintenance)
+- View dashboard statistics
+- View household members
+- Cannot create, edit, or delete any items
+- Cannot invite members or change roles
+- Can leave the household voluntarily
+
+<Warning>
+Guests cannot make any changes to household data. All action buttons and edit functionality are disabled for guest users.
+</Warning>
+
+## Permission Matrix
+
+Here's a complete breakdown of what each role can do:
+
+| Action | Owner | Member | Guest |
+|--------|-------|--------|-------|
+| **View household data** | ✅ | ✅ | ✅ |
+| **Create items** | ✅ | ✅ | ❌ |
+| **Edit items** | ✅ | ✅ | ❌ |
+| **Delete items** | ✅ | ✅ | ❌ |
+| **View members** | ✅ | ✅ | ✅ |
+| **Invite members** | ✅ | ❌ | ❌ |
+| **Change member roles** | ✅ | ❌ | ❌ |
+| **Remove members** | ✅ | ❌ | ❌ |
+| **Leave household** | ❌* | ✅ | ✅ |
+| **View audit logs** | ✅ | ✅ | ✅ |
+| **View notifications** | ✅ | ✅ | ✅ |
+
+*True owners cannot leave their own household
+
+## Permission Implementation
+
+Home Manager implements permissions at multiple levels:
+
+### Frontend Permission Checks
+
+The UI dynamically shows or hides features based on your role:
+
+```typescript
+// src/app/lib/roles.ts:8
+export const canEdit = (role?: Role): boolean =>
+  role === "owner" || role === "member";
+
+export const isGuest = (role?: Role): boolean => 
+  role === "guest";
+```
+
+**Examples:**
+- Edit buttons are hidden for guests
+- The "Invite Member" form only appears for owners
+- Role selection dropdowns are disabled for non-owners
+
+### Backend Validation
+
+API endpoints verify permissions before allowing operations:
+
+- User authentication is required for all requests
+- Household membership is validated
+- Role-based checks prevent unauthorized actions
+
+<Info>
+Even if a user bypasses frontend restrictions, backend validation ensures data security and permission enforcement.
+</Info>
+
+## Managing Roles
+
+### Viewing Member Roles
+
+To see household members and their roles:
+
+1. Navigate to the **Household** tab
+2. View the list of all members
+3. Each member card shows:
+   - Name and email
+   - Current role (as a badge)
+   - Status (Active or Pending)
+
+### Changing Member Roles
+
+Only owners can change roles:
+
+1. Go to the **Household** page
+2. Find the member whose role you want to change
+3. Use the **role dropdown** next to their name
+4. Select the new role: Owner, Member, or Guest
+5. The change takes effect immediately
+
+<Warning>
+You cannot change the role of the true owner (the user with the crown icon). This prevents accidental loss of administrative access.
+</Warning>
+
+### Role Change Effects
+
+**Promoting to Owner:**
+- User gains full administrative control
+- Can now invite members and change roles
+- Can remove other members (except the true owner)
+
+**Demoting to Member:**
+- User loses administrative privileges
+- Retains full editing permissions for items
+- Can no longer manage household membership
+
+**Demoting to Guest:**
+- User loses all editing permissions
+- Can only view household data
+- All action buttons become disabled
+
+## Inviting Members
+
+Owners can invite new members to the household:
+
+### Invitation Process
+
+1. Navigate to the **Household** page
+2. Enter the email address in the "Invite by Email" field
+3. Click **Invite**
+4. The new member is added with a **Pending** status
+5. Default role: **Member**
+
+<Note>
+New invitations are created with the "member" role by default (see `src/app/api/household/members/route.ts:128`). You can change their role after they accept the invitation.
+</Note>
+
+### Invitation Status
+
+**Pending:**
+- User has been invited but hasn't signed in yet
+- Shows as "Pending" badge in the members list
+- No user ID is associated yet
+
+**Active:**
+- User has signed in and accepted the invitation
+- Shows as "Active" badge in the members list
+- Full access based on their assigned role
+
+## Removing Members
+
+Owners can remove members from the household:
+
+1. Go to the **Household** page
+2. Find the member you want to remove
+3. Click the **delete icon** (🗑️) next to their role
+4. Confirm the removal
+5. The member is immediately removed from the household
+
+<Warning>
+**Limitations:**
+- You cannot remove the true owner
+- You cannot remove yourself if you're the true owner
+- Non-owners cannot remove any members
+</Warning>
+
+## Leaving a Household
+
+Members and guests can voluntarily leave a household:
+
+1. Navigate to the **Household** page
+2. Scroll to the bottom
+3. Click the **Exit Household** button
+4. Confirm your decision
+5. You'll be removed from the household immediately
+
+<Info>
+After leaving a household, you'll need to create a new household or wait for another invitation to access Home Manager features.
+</Info>
+
+**True owners cannot leave** their own household. To close a household:
+- Transfer ownership to another member first
+- Then leave as a non-owner, or
+- Remove all members and let the household remain with just the owner
+
+## Role-Based UI Features
+
+### Dashboard
+
+- **All roles**: View summary cards, bill charts, and statistics
+- **Owner/Member**: See "Add" buttons and action menus
+- **Guest**: View-only mode, no action buttons
+
+### Bills, Chores, Shopping, Maintenance Pages
+
+- **All roles**: View list items and details
+- **Owner/Member**: Create, edit, delete, and mark items as complete
+- **Guest**: View-only, no interactive elements
+
+### Household Page
+
+- **Owner**: Full member management interface
+- **Member**: View members only
+- **Guest**: View members only
+
+### Notifications
+
+- **All roles**: Receive and view notifications about household activity
+- Notifications are household-wide, not role-specific
+
+## Best Practices
+
+### Role Assignment Guidelines
+
+**Assign Owner to:**
+- Trusted household members who need full control
+- Users responsible for managing household finances
+- Primary administrators
+
+**Assign Member to:**
+- Regular household members who contribute to tasks
+- Users who need to manage day-to-day items
+- Anyone who should actively participate in household management
+
+**Assign Guest to:**
+- Temporary visitors or observers
+- Users who only need visibility into household activities
+- Anyone who shouldn't make changes to household data
+
+### Security Recommendations
+
+- Limit the number of owners to trusted individuals
+- Regularly review your household members list
+- Remove members who no longer need access
+- Use the Guest role for temporary access needs
+
+<Note>
+Changes to roles take effect immediately and apply across all devices and sessions.
+</Note>

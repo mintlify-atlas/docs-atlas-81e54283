@@ -1,0 +1,327 @@
+---
+title: "Household Management"
+description: "Create households, invite members, manage roles and permissions"
+icon: "house-user"
+---
+
+## Overview
+
+Household Management is the foundation of Home Manager. Every user belongs to a household, and the household determines who can see and manage chores, bills, shopping lists, and maintenance tasks together.
+
+## Key Concepts
+
+<CardGroup cols={2}>
+  <Card title="Households" icon="house">
+    A household is a group of users who share access to the same chores, bills, shopping, and maintenance data
+  </Card>
+  <Card title="Roles" icon="user-tag">
+    Each member has a role (Owner, Member, or Guest) that determines their permissions
+  </Card>
+  <Card title="Invitations" icon="envelope">
+    Invite new members by email, and they'll receive a pending invitation to join
+  </Card>
+  <Card title="Real-Time Sync" icon="arrows-rotate">
+    All household data syncs instantly across all members' devices
+  </Card>
+</CardGroup>
+
+## Creating Your First Household
+
+When you sign up for Home Manager:
+
+1. You're automatically prompted to create a household
+2. The system initializes your household with you as the Owner
+3. Your household ID is generated and linked to all your data
+4. You can immediately start adding chores, bills, shopping items, and maintenance tasks
+
+<Note>
+  You can only belong to one household at a time. To join a different household, you must exit your current one.
+</Note>
+
+## Household Roles
+
+### Owner
+
+The highest permission level with full control:
+
+- ✅ Add, edit, and delete all items (chores, bills, shopping, maintenance)
+- ✅ Invite new members via email
+- ✅ Change member roles (except the true owner)
+- ✅ Remove members from the household
+- ✅ View all household activity in the audit log
+- ⚠️ **Cannot exit the household** (must transfer ownership first)
+
+<Note>
+  The "true owner" is the person who created the household. They have a crown icon (👑) next to their name and cannot be removed or demoted by other owners.
+</Note>
+
+### Member
+
+Full participant with active management rights:
+
+- ✅ Add, edit, and delete all items
+- ✅ Reorder items via drag and drop
+- ✅ View all household data and audit logs
+- ❌ Cannot invite new members
+- ❌ Cannot change roles
+- ❌ Cannot remove other members
+- ✅ Can exit the household at any time
+
+### Guest
+
+Read-only access for visitors or temporary household helpers:
+
+- ✅ View chores, bills, shopping lists, and maintenance tasks
+- ❌ Cannot add, edit, or delete anything
+- ❌ Cannot reorder items
+- ❌ Cannot access household member management
+- ✅ Can exit the household at any time
+
+<Warning>
+  Guest access is useful for babysitters, housekeepers, or short-term visitors who need to see household information but shouldn't make changes.
+</Warning>
+
+## Inviting Members
+
+Owners can invite new members to the household:
+
+1. Navigate to the **Household** page
+2. Enter the invitee's email address in the "Invite by Email" field
+3. Click **Invite**
+4. The person receives an invitation linked to their email
+5. They must sign up or log in to Home Manager with that exact email
+6. Once logged in, they see an invitation banner at the top of the Household page
+
+### Invitation Flow
+
+<Steps>
+  <Step title="Owner sends invite">
+    Owner enters email and clicks Invite. The system creates a pending household membership.
+  </Step>
+  <Step title="Invitee receives notification">
+    Invitee logs into Home Manager with the email used for the invitation.
+  </Step>
+  <Step title="Invitee sees banner">
+    A yellow banner appears at the top of their Household page showing the household name.
+  </Step>
+  <Step title="Invitee accepts or declines">
+    Click **Accept** to join the household, or **Decline** to reject the invitation.
+  </Step>
+  <Step title="Invitation resolved">
+    If accepted, the invitee becomes an active Member with full access. If declined, the invitation is deleted.
+  </Step>
+</Steps>
+
+<Note>
+  Pending invitations show a "Pending" status chip on the Household page. Once accepted, the status changes to "Active".
+</Note>
+
+## Managing Member Roles
+
+Owners can change roles for any member (except the true owner):
+
+1. Go to the **Household** page
+2. Find the member whose role you want to change
+3. Click the **role dropdown** next to their name
+4. Select the new role: Owner, Member, or Guest
+5. The change is applied immediately and syncs to all devices
+
+### Role Change Scenarios
+
+<Accordion title="Promoting Member to Owner">
+  Useful when multiple people need full management rights, such as co-parents or co-renters.
+  
+  **Note:** Multiple owners can exist, but only the true owner (household creator) has the crown icon and cannot be removed.
+</Accordion>
+
+<Accordion title="Demoting Owner to Member">
+  Useful if someone no longer needs full administrative control but should still participate.
+  
+  **Warning:** The true owner cannot be demoted by other owners.
+</Accordion>
+
+<Accordion title="Changing Member to Guest">
+  Useful for restricting access without removing someone entirely. Common for short-term visitors or when trust issues arise.
+</Accordion>
+
+<Accordion title="Upgrading Guest to Member">
+  Useful when a temporary helper becomes a regular household participant and needs editing rights.
+</Accordion>
+
+## Removing Members
+
+Owners can remove any member (except the true owner):
+
+1. Go to the **Household** page
+2. Find the member to remove
+3. Click the **trash icon** next to their name
+4. Confirm the removal in the dialog
+5. The member is immediately removed and loses access to the household
+
+<Warning>
+  Removed members cannot see any household data after removal. Their past audit log entries remain for accountability.
+</Warning>
+
+## Exiting a Household
+
+Members and Guests can leave a household voluntarily:
+
+1. Go to the **Household** page
+2. Scroll to the bottom and click **Exit Household** (button is fixed at the bottom)
+3. Confirm you want to leave
+4. You're removed from the household and returned to the household creation flow
+
+<Note>
+  The true owner (crown icon) cannot exit the household. To leave, they must first transfer ownership or delete the household entirely.
+</Note>
+
+## Household Data & Privacy
+
+Understanding what household members can see:
+
+- **All members** (Owner, Member, Guest) see the same chores, bills, shopping items, and maintenance tasks
+- **All members** see the same audit log entries
+- **Only Owners** can see pending invitations and member emails
+- **Personal account data** (like Clerk authentication) is private and not shared
+
+### Data Visibility by Role
+
+| Data Type | Owner | Member | Guest |
+|-----------|-------|---------|-------|
+| Chores | ✅ Read/Write | ✅ Read/Write | 👁️ Read Only |
+| Bills | ✅ Read/Write | ✅ Read/Write | 👁️ Read Only |
+| Shopping | ✅ Read/Write | ✅ Read/Write | 👁️ Read Only |
+| Maintenance | ✅ Read/Write | ✅ Read/Write | 👁️ Read Only |
+| Audit Log | ✅ Read | ✅ Read | ✅ Read |
+| Member List | ✅ Read/Write | ✅ Read | ✅ Read |
+| Invitations | ✅ Send/Manage | ❌ No Access | ❌ No Access |
+
+## Household Name
+
+Each household has a name (set during creation):
+
+- Displayed on the invitation acceptance banner
+- Used to identify which household members belong to
+- **Currently cannot be changed after creation**
+
+<Note>
+  Choose your household name carefully during setup. Future versions may add the ability to rename households.
+</Note>
+
+## Data Model
+
+### Household Schema
+
+```prisma
+model Household {
+  id        String             @id @default(cuid())
+  name      String
+  members   HouseholdMember[]
+  createdAt DateTime           @default(now())
+}
+```
+
+### Household Member Schema
+
+```prisma
+model HouseholdMember {
+  id           String     @id @default(cuid())
+  householdId  String
+  userId       String?    // null until invitation accepted
+  invitedEmail String?    // email used for invitation
+  role         String     // "owner", "member", or "guest"
+  status       String?    @default("pending") // "pending" or "accepted"
+  Household    Household  @relation(fields: [householdId], references: [id])
+
+  @@unique([householdId, userId])
+}
+```
+
+## API Endpoints
+
+Household management uses these API routes:
+
+- `GET /api/household/members` - Fetch all household members
+- `POST /api/household/members` - Invite new member, update role, or remove member
+- `GET /api/household/invite-status` - Check if current user has pending invitations
+- `POST /api/household/accept` - Accept a pending invitation
+- `POST /api/household/decline` - Decline a pending invitation
+- `POST /api/household/init` - Initialize a new household (called during onboarding)
+
+## Permissions Summary
+
+<CardGroup cols={3}>
+  <Card title="Owner Permissions" icon="crown">
+    - Full CRUD on all items
+    - Invite members
+    - Change roles
+    - Remove members
+    - Cannot exit (if true owner)
+  </Card>
+  <Card title="Member Permissions" icon="user">
+    - Full CRUD on all items
+    - Reorder items
+    - View audit logs
+    - Can exit household
+    - Cannot manage members
+  </Card>
+  <Card title="Guest Permissions" icon="eye">
+    - Read-only access
+    - View all items
+    - View audit logs
+    - Can exit household
+    - No editing rights
+  </Card>
+</CardGroup>
+
+## Tips & Best Practices
+
+<Accordion title="Assign Owners Carefully">
+  Only promote trusted household members to Owner. They have full control including removing other members.
+</Accordion>
+
+<Accordion title="Use Guest Role for Temporary Help">
+  Babysitters, housekeepers, or visiting relatives should be Guests so they can see information without accidentally changing it.
+</Accordion>
+
+<Accordion title="Communicate Role Changes">
+  Before changing someone's role or removing them, communicate in person to avoid confusion or conflict.
+</Accordion>
+
+<Accordion title="Track the True Owner">
+  Remember who created the household (look for the crown icon). They're the only one who can never be removed.
+</Accordion>
+
+<Accordion title="Don't Share Login Credentials">
+  Each person should have their own account. Sharing logins prevents proper audit logging and breaks the permission system.
+</Accordion>
+
+<Accordion title="Review Members Regularly">
+  Periodically check your household member list and remove anyone who no longer needs access.
+</Accordion>
+
+## Common Workflows
+
+### Adding a Roommate
+
+1. Owner enters roommate's email on Household page
+2. Clicks Invite
+3. Roommate signs up with that email
+4. Roommate logs in and sees invitation banner
+5. Roommate clicks Accept
+6. Roommate is now a Member with full access
+
+### Short-Term Housesitter
+
+1. Owner invites housesitter as normal
+2. Housesitter accepts invitation
+3. Owner immediately changes their role to Guest
+4. Housesitter can view chores/shopping but cannot edit
+5. When housesitting ends, Owner removes the housesitter
+
+### Transferring Ownership (Workaround)
+
+1. True owner promotes new person to Owner role
+2. New owner now has equal permissions (except cannot remove true owner)
+3. True owner can then exit by first creating a new household
+4. **Note:** True ownership (crown) cannot be transferred in current version

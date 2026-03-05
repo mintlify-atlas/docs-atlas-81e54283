@@ -1,80 +1,391 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start Guide
+description: Get started with Home Manager in minutes - from account creation to your first household tasks
 ---
 
-## Get started in three steps
+## Welcome to Home Manager
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+This guide will walk you through creating your account, setting up your first household, and adding your initial tasks. You'll be up and running in less than 5 minutes.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Home Manager uses Clerk for authentication, providing secure sign-up with email/password or social login options (Google, GitHub, etc.).
+</Note>
+
+## Prerequisites
+
+All you need is:
+- A web browser (Chrome, Firefox, Safari, or Edge)
+- An email address
+- 5 minutes of your time
+
+## Step 1: Create Your Account
+
+<Steps>
+  <Step title="Navigate to Home Manager">
+    Visit your Home Manager instance (e.g., `https://your-home-manager.app` or `http://localhost:3000` for local development)
+  </Step>
+  
+  <Step title="Sign Up">
+    Click **Sign up** and choose your preferred method:
+    
+    - **Email/Password**: Enter your email and create a secure password
+    - **Social Login**: Use Google, GitHub, or other OAuth providers
+    
+    The Clerk authentication system handles all security and verification.
+  </Step>
+  
+  <Step title="Verify Your Email">
+    Check your inbox for a verification email and click the confirmation link. This ensures account security.
+  </Step>
+  
+  <Step title="Complete Your Profile">
+    Add your name and any additional profile information. This helps other household members identify you.
+  </Step>
+</Steps>
+
+<Note>
+  After signing up, you'll be automatically redirected to the dashboard at `/dashboard`.
+</Note>
+
+## Step 2: Your First Household
+
+Home Manager automatically creates your first household when you sign in. Here's what happens behind the scenes:
+
+```typescript
+// From src/app/api/household/init/route.ts
+const household = await getOrCreateHousehold(userId, email);
+```
+
+The system:
+1. Creates a household with your user as the **Owner**
+2. Sets up your household ID for all future data
+3. Initializes empty collections for chores, bills, shopping, and maintenance
+
+### Understanding Household Roles
+
+<CardGroup cols={3}>
+  <Card title="Owner" icon="crown">
+    Full control: manage members, edit all data, and delete the household
+  </Card>
+  
+  <Card title="Member" icon="user">
+    Can view and edit household data but cannot invite or remove members
+  </Card>
+  
+  <Card title="Guest" icon="eye">
+    Read-only access to view household information
+  </Card>
+</CardGroup>
+
+## Step 3: Explore the Dashboard
+
+Your dashboard provides an at-a-glance view of your household:
+
+```typescript
+// Real-time counts from multiple endpoints
+const endpoints = {
+  bills: "/api/bills/count",
+  chores: "/api/chores/count",
+  shopping: "/api/shopping/count",
+  maintenance: "/api/maintenance/count"
+};
+```
+
+The dashboard shows:
+- **Summary Cards**: Quick counts of pending bills, active chores, shopping items, and maintenance tasks
+- **Monthly Bills Chart**: Visual analytics of bill payments over time
+- **Personalized Greeting**: Dynamic welcome message based on time of day
+
+## Step 4: Add Your First Chore
+
+Let's create your first household task:
+
+<Steps>
+  <Step title="Navigate to Chores">
+    Click on **Chores** in the navigation menu (located at `/chores`)
+  </Step>
+  
+  <Step title="Create a New Chore">
+    Click the **Add Chore** button and fill in the details:
+    
+    <CodeGroup>
+    ```json Example Chore
+    {
+      "name": "Vacuum living room",
+      "assignee": "John Doe",
+      "description": "Vacuum the main living area including under furniture",
+      "recurrence": "weekly"
+    }
+    ```
+    </CodeGroup>
+  </Step>
+  
+  <Step title="Assign to a Member">
+    Select who's responsible for this chore from the household members dropdown
+  </Step>
+  
+  <Step title="Set Recurrence (Optional)">
+    Choose a recurrence pattern:
+    - **None**: One-time task
+    - **Daily**: Repeats every day
+    - **Weekly**: Repeats every week
+    - **Monthly**: Repeats every month
+  </Step>
+</Steps>
+
+The chore is created via the API:
+
+```typescript
+// POST /api/chores
+const newChore = await prisma.choresItem.create({
+  data: {
+    householdId: household.id,
+    name: "Vacuum living room",
+    assignee: "John Doe",
+    description: "Vacuum the main living area",
+    position: nextPosition
+  }
+});
+```
+
+## Step 5: Track a Bill
+
+Never miss a payment again:
+
+<Steps>
+  <Step title="Go to Bills">
+    Navigate to **Bills** from the main menu
+  </Step>
+  
+  <Step title="Add Your First Bill">
+    Click **Add Bill** and enter:
+    
+    - **Name**: e.g., "Electric Bill"
+    - **Amount**: e.g., `$125.00`
+    - **Due Date**: Select the payment due date
+    - **Category**: Choose from Utilities, Rent, Internet, Insurance, etc.
+  </Step>
+  
+  <Step title="View Bill Analytics">
+    Return to the dashboard to see your monthly bill trends visualized in the chart
+  </Step>
+</Steps>
+
+<CodeGroup>
+```typescript API Request
+// POST /api/bills
+await fetch('/api/bills', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'Electric Bill',
+    amount: 125.00,
+    dueDate: '2026-03-15',
+    category: 'Utilities'
+  })
+});
+```
+
+```json Database Record
+{
+  "id": "clx...",
+  "householdId": "clx...",
+  "name": "Electric Bill",
+  "amount": 125.00,
+  "dueDate": "2026-03-15T00:00:00.000Z",
+  "category": "Utilities",
+  "checked": false,
+  "position": 0
+}
+```
+</CodeGroup>
+
+## Step 6: Create a Shopping List
+
+Collaborate on grocery shopping:
+
+<Steps>
+  <Step title="Open Shopping">
+    Click **Shopping** in the navigation
+  </Step>
+  
+  <Step title="Add Items">
+    Add items to your list:
+    - Milk (Dairy)
+    - Bread (Bakery)
+    - Apples (Produce)
+    - Chicken (Meat)
+  </Step>
+  
+  <Step title="Organize by Drag-and-Drop">
+    Reorder items by dragging them. The order is saved automatically:
+    
+    ```typescript
+    // POST /api/shopping with orderedIds
+    await fetch('/api/shopping', {
+      method: 'POST',
+      body: JSON.stringify({
+        orderedIds: ["id1", "id2", "id3"]
+      })
+    });
+    ```
+  </Step>
+  
+  <Step title="Check Off Items">
+    As you shop, check off items. They'll be marked complete for all household members in real-time.
+  </Step>
+</Steps>
+
+## Step 7: Invite Household Members
+
+Collaborate with family or roommates:
+
+<Steps>
+  <Step title="Navigate to Household">
+    Go to **Household** from the main menu
+  </Step>
+  
+  <Step title="Enter Email Address">
+    In the "Invite by Email" field, enter the email address of the person you want to invite
+  </Step>
+  
+  <Step title="Send Invitation">
+    Click **Invite**. The system will:
+    
+    1. Create a pending household member record
+    2. Send an email invitation (via Clerk)
+    3. Show the invite as "Pending" in your members list
+  </Step>
+  
+  <Step title="Member Accepts">
+    When they sign up/sign in, they'll see an invitation banner:
+    
+    ```typescript
+    // They can accept or decline
+    await fetch('/api/household/accept', {
+      method: 'POST',
+      body: JSON.stringify({ inviteId })
+    });
+    ```
+  </Step>
+  
+  <Step title="Assign Roles">
+    Once accepted, you can assign them a role (Owner, Member, or Guest)
+  </Step>
+</Steps>
+
+<Warning>
+  Only household **Owners** can invite new members. Members and Guests cannot send invitations.
+</Warning>
+
+## Step 8: Track Maintenance
+
+Log home maintenance activities:
+
+<Steps>
+  <Step title="Go to Maintenance">
+    Navigate to the **Maintenance** section
+  </Step>
+  
+  <Step title="Add a Maintenance Task">
+    Example:
+    
+    - **Title**: "Replace HVAC filter"
+    - **Category**: "HVAC"
+    - **Description**: "Replace with 16x20x1 MERV 11 filter"
+    - **Recurrence**: "Monthly"
+  </Step>
+  
+  <Step title="Track Completion">
+    Mark tasks as complete to maintain a history log for future reference
+  </Step>
+</Steps>
+
+## Understanding the Database Schema
+
+Here's how your data is organized:
+
+```prisma
+// From prisma/schema.prisma
+model Household {
+  id        String             @id @default(cuid())
+  name      String
+  members   HouseholdMember[]
+  createdAt DateTime           @default(now())
+}
+
+model HouseholdMember {
+  id           String     @id @default(cuid())
+  householdId  String
+  userId       String?
+  invitedEmail String?
+  role         String
+  status       String?    @default("pending")
+  Household    Household  @relation(fields: [householdId], references: [id])
+}
+
+model ChoresItem {
+  id           String   @id @default(uuid())
+  householdId  String
+  name         String
+  assignee     String
+  description  String
+  recurrence   String   @default("none")
+  checked      Boolean  @default(false)
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Explore API Routes" icon="code" href="/api/overview">
+    Learn about the available API endpoints
+  </Card>
+  
+  <Card title="Self-Host Guide" icon="server" href="/installation">
+    Deploy your own instance of Home Manager
+  </Card>
+  
+  <Card title="Customize Settings" icon="gear">
+    Configure preferences like theme, language, and notifications
+  </Card>
+  
+  <Card title="View Audit Logs" icon="clock-rotate-left">
+    Track all household activities with detailed audit logs
+  </Card>
+</CardGroup>
+
+## Common Questions
+
+<AccordionGroup>
+  <Accordion title="Can I belong to multiple households?">
+    Currently, each user can be a member of one household at a time. You can leave a household and join another, or create a new one.
+  </Accordion>
+  
+  <Accordion title="What happens if I delete a chore or bill?">
+    Deleted items are removed from the database. Consider marking items as complete instead of deleting them to maintain history.
+  </Accordion>
+  
+  <Accordion title="How do I change my household name?">
+    Currently, household names are set during creation. Contact support or modify directly in the database if self-hosting.
+  </Accordion>
+  
+  <Accordion title="Can guests add or edit items?">
+    No, guests have read-only access. They can view all household data but cannot make changes. Upgrade them to Member role to grant edit permissions.
+  </Accordion>
+</AccordionGroup>
+
+## Need Help?
+
+If you encounter any issues:
+
+1. Check the browser console for error messages
+2. Verify your authentication status (sign out and sign back in)
+3. Review the [GitHub repository](https://github.com/Alexander-Malpica/home-manager-app) for known issues
+4. Open an issue on GitHub with detailed reproduction steps
+
+<Note>
+  Home Manager is under active development. Features and APIs may evolve. Check the GitHub repository for the latest updates.
 </Note>

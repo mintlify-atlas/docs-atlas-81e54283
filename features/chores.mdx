@@ -1,0 +1,168 @@
+---
+title: "Chores"
+description: "Track household chores with assignees, descriptions, and recurrence schedules"
+icon: "broom"
+---
+
+## Overview
+
+The Chores feature helps you organize and track household tasks by assigning them to specific household members. Set up recurring schedules, add detailed descriptions, and keep everyone accountable with a shared chore list.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Task Assignment" icon="user-check">
+    Assign chores to specific household members to ensure clear responsibility
+  </Card>
+  <Card title="Recurrence Scheduling" icon="calendar-days">
+    Set up weekly, biweekly, or monthly recurring chores that automatically reset
+  </Card>
+  <Card title="Detailed Descriptions" icon="file-lines">
+    Add notes and instructions to each chore for clarity
+  </Card>
+  <Card title="Drag & Drop Reordering" icon="grip-vertical">
+    Easily reorganize your chore list by dragging items
+  </Card>
+</CardGroup>
+
+## Creating a Chore
+
+1. Click the **+** floating button at the bottom right of the Chores page
+2. Fill in the chore details:
+   - **Chore Name** - What needs to be done (e.g., "Take out trash")
+   - **Assigned To** - Select a household member from the dropdown
+   - **Recurrence** - Choose how often it repeats: None, Weekly, Biweekly, or Monthly
+   - **Description** - Add optional notes or instructions
+3. Click **Add** to save the chore
+
+<Note>
+  The "Assigned To" dropdown automatically shows all active members from your household.
+</Note>
+
+## Viewing Chores
+
+The Chores page displays all household chores in a single list with:
+- **Chore name** as the primary text
+- **Assignee and description** shown below
+- Option to filter between "All" chores or "Assigned to Me"
+
+### Filter Options
+
+Use the toggle buttons at the top of the page:
+
+<Tabs>
+  <Tab title="All">
+    View every chore in the household, regardless of who it's assigned to
+  </Tab>
+  <Tab title="Assigned to Me">
+    Filter to show only chores assigned to your account
+  </Tab>
+</Tabs>
+
+## Completing a Chore
+
+To mark a chore as complete:
+
+1. **Tap the chore item** in the list
+2. The item is immediately removed from view
+3. An **Undo** button appears for 3.5 seconds - tap it to restore the chore
+4. After 4 seconds, the chore is permanently deleted from the database
+
+<Warning>
+  Once the undo timer expires, the chore is permanently deleted and logged in the audit trail.
+</Warning>
+
+## Editing a Chore
+
+1. Tap the **edit icon** on the right side of any chore item
+2. Modify any of the fields:
+   - Chore Name
+   - Assignee
+   - Recurrence schedule
+   - Description
+3. Click **Update** to save your changes
+
+Changes are instantly synced across all household members' devices.
+
+## Reordering Chores
+
+You can customize the order of chores by:
+
+1. **Press and hold** a chore item
+2. **Drag it** to your desired position
+3. **Release** to drop it in place
+
+The new order is automatically saved to the database and synced across all devices.
+
+## Recurrence Options
+
+<Accordion title="None">
+  One-time chores that don't repeat. Once completed, they're removed from the list.
+</Accordion>
+
+<Accordion title="Weekly">
+  Chores that need to be done every week. Set this for tasks like taking out the trash or cleaning bathrooms.
+</Accordion>
+
+<Accordion title="Biweekly">
+  Chores that occur every two weeks. Perfect for tasks like changing bed sheets or deep cleaning.
+</Accordion>
+
+<Accordion title="Monthly">
+  Chores that repeat every month. Ideal for tasks like replacing air filters or checking smoke detectors.
+</Accordion>
+
+## Permissions
+
+Access to chores functionality varies by household role:
+
+| Role | View Chores | Add Chores | Edit Chores | Complete Chores | Reorder |
+|------|-------------|------------|-------------|-----------------|----------|
+| **Owner** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Member** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Guest** | ✅ | ❌ | ❌ | ❌ | ❌ |
+
+<Note>
+  Guests can view all chores but cannot make any changes. This is useful for babysitters, housekeepers, or temporary household helpers.
+</Note>
+
+## Data Model
+
+Each chore in the system contains:
+
+- `id` - Unique identifier (UUID)
+- `householdId` - Links the chore to your household
+- `name` - The chore title
+- `assignee` - Name of the assigned household member
+- `description` - Optional task details
+- `recurrence` - Frequency: "none", "weekly", "biweekly", or "monthly"
+- `position` - Sort order in the list
+- `checked` - Completion status
+- `createdAt` - Timestamp when created
+
+## Audit Logging
+
+All chore actions are automatically logged to the household audit trail:
+
+- **Added chore** - When a new chore is created
+- **Completed chore** - When a chore is marked as done
+
+Each log entry includes the user name, action type, and chore name for full accountability.
+
+## Tips & Best Practices
+
+<Accordion title="Assign Fairly">
+  Use the "Assigned to Me" filter to ensure chores are distributed evenly among household members.
+</Accordion>
+
+<Accordion title="Use Descriptions">
+  Add specific instructions to chores (e.g., "Use eco-friendly cleaner under sink") to avoid confusion.
+</Accordion>
+
+<Accordion title="Set Realistic Recurrence">
+  Match recurrence to actual needs - overcommitting leads to incomplete chores piling up.
+</Accordion>
+
+<Accordion title="Order by Priority">
+  Drag urgent or time-sensitive chores to the top of the list so they're seen first.
+</Accordion>

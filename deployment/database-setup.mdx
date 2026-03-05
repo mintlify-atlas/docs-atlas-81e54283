@@ -1,0 +1,562 @@
+---
+title: Database Setup
+description: Configure PostgreSQL and manage your database schema with Prisma
+---
+
+## Overview
+
+Home Manager uses PostgreSQL as its database and Prisma as the ORM (Object-Relational Mapping) tool. This guide covers database setup, schema management, and migrations.
+
+## Database Requirements
+
+<Note>
+**Minimum Requirements:**
+- PostgreSQL 12 or higher
+- At least 100MB storage (scales with usage)
+- Support for UUID generation
+</Note>
+
+## PostgreSQL Setup
+
+### Option 1: Local PostgreSQL Installation
+
+<Steps>
+  <Step title="Install PostgreSQL">
+    <CodeGroup>
+    ```bash macOS (Homebrew)
+    brew install postgresql@15
+    brew services start postgresql@15
+    ```
+
+    ```bash Ubuntu/Debian
+    sudo apt update
+    sudo apt install postgresql postgresql-contrib
+    sudo systemctl start postgresql
+    sudo systemctl enable postgresql
+    ```
+
+    ```bash Windows
+    # Download installer from postgresql.org
+    # Or use Chocolatey:
+    choco install postgresql
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Create Database">
+    ```bash
+    # Connect to PostgreSQL
+    psql -U postgres
+
+    # Create database
+    CREATE DATABASE homemanager;
+
+    # Create user (optional)
+    CREATE USER homemanager_user WITH PASSWORD 'your_password';
+    GRANT ALL PRIVILEGES ON DATABASE homemanager TO homemanager_user;
+
+    # Exit psql
+    \q
+    ```
+  </Step>
+
+  <Step title="Set DATABASE_URL">
+    ```bash .env.local
+    DATABASE_URL="postgresql://postgres:password@localhost:5432/homemanager"
+    ```
+  </Step>
+</Steps>
+
+### Option 2: Cloud PostgreSQL Providers
+
+<Tabs>
+  <Tab title="Supabase">
+    <Steps>
+      <Step title="Create Project">
+        1. Sign up at [supabase.com](https://supabase.com)
+        2. Click **New Project**
+        3. Choose your organization
+        4. Enter project details and password
+        5. Select a region close to your users
+      </Step>
+
+      <Step title="Get Connection String">
+        1. Go to **Project Settings** → **Database**
+        2. Copy the **Connection string** under **Connection info**
+        3. Replace `[YOUR-PASSWORD]` with your database password
+
+        ```bash
+        DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.example.supabase.co:5432/postgres"
+        ```
+      </Step>
+
+      <Step title="Enable Connection Pooling (Recommended)">
+        For production, use Supabase's connection pooler:
+
+        ```bash
+        DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.example.supabase.co:6543/postgres?pgbouncer=true"
+        ```
+      </Step>
+    </Steps>
+
+    <Tip>
+    Supabase offers a generous free tier with 500MB database storage.
+    </Tip>
+  </Tab>
+
+  <Tab title="Neon">
+    <Steps>
+      <Step title="Create Project">
+        1. Sign up at [neon.tech](https://neon.tech)
+        2. Click **Create Project**
+        3. Choose project name and region
+        4. Select PostgreSQL version
+      </Step>
+
+      <Step title="Get Connection String">
+        1. On the project dashboard, find **Connection Details**
+        2. Copy the connection string
+
+        ```bash
+        DATABASE_URL="postgresql://user:password@ep-example.us-east-2.aws.neon.tech/neondb"
+        ```
+      </Step>
+    </Steps>
+
+    <Note>
+    Neon offers serverless PostgreSQL with automatic scaling and branching for development.
+    </Note>
+  </Tab>
+
+  <Tab title="Railway">
+    <Steps>
+      <Step title="Create PostgreSQL Service">
+        1. Sign up at [railway.app](https://railway.app)
+        2. Click **New Project** → **Provision PostgreSQL**
+        3. Database is automatically provisioned
+      </Step>
+
+      <Step title="Get Connection String">
+        1. Click on the PostgreSQL service
+        2. Go to **Variables** tab
+        3. Copy the `DATABASE_URL` value
+
+        ```bash
+        DATABASE_URL="postgresql://postgres:password@containers-us-west.railway.app:7432/railway"
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Render">
+    <Steps>
+      <Step title="Create PostgreSQL Database">
+        1. Sign up at [render.com](https://render.com)
+        2. Click **New** → **PostgreSQL**
+        3. Enter database name and region
+        4. Select instance type (free tier available)
+      </Step>
+
+      <Step title="Get Connection String">
+        1. On database dashboard, find **Connections**
+        2. Copy **Internal Database URL** (for apps on Render)
+        3. Or copy **External Database URL** (for external access)
+
+        ```bash
+        DATABASE_URL="postgresql://user:password@dpg-example.oregon-postgres.render.com/database"
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Prisma Schema Overview
+
+Home Manager's database schema includes the following models:
+
+```prisma prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ShoppingItem {
+  id           String   @id @default(uuid())
+  householdId  String
+  name         String
+  category     String
+  position     Int      @default(0)
+  checked      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model BillsItem {
+  id           String   @id @default(uuid())
+  householdId  String
+  name         String
+  amount       Float
+  dueDate      DateTime
+  category     String
+  position     Int      @default(0)
+  checked      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model ChoresItem {
+  id           String   @id @default(uuid())
+  householdId  String
+  name         String
+  assignee     String
+  description  String
+  position     Int      @default(0)
+  checked      Boolean  @default(false)
+  recurrence   String   @default("none")
+  createdAt    DateTime @default(now())
+}
+
+model MaintenanceItem {
+  id           String   @id @default(uuid())
+  householdId  String
+  title        String
+  category     String
+  description  String
+  position     Int      @default(0)
+  checked      Boolean  @default(false)
+  recurrence   String   @default("none")
+  createdAt    DateTime @default(now())
+}
+
+model Notification {
+  id           String   @id @default(uuid())
+  householdId  String
+  type         String
+  title        String
+  body         String
+  read         Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Household {
+  id        String             @id @default(cuid())
+  name      String
+  members   HouseholdMember[]
+  createdAt DateTime           @default(now())
+}
+
+model HouseholdMember {
+  id           String     @id @default(cuid())
+  householdId  String
+  userId       String?
+  invitedEmail String?
+  role         String
+  status       String?    @default("pending")
+  Household    Household  @relation(fields: [householdId], references: [id])
+
+  @@unique([householdId, userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  userName  String
+  action    String
+  itemType  String
+  itemName  String
+  createdAt DateTime @default(now())
+}
+```
+
+### Key Models
+
+- **ShoppingItem** - Shopping list items
+- **BillsItem** - Bill tracking with amounts and due dates
+- **ChoresItem** - Household chores with assignees
+- **MaintenanceItem** - Home maintenance tasks
+- **Notification** - User notifications and activity feed
+- **Household** - Household groups
+- **HouseholdMember** - Members and invitations
+- **AuditLog** - Activity tracking and audit trail
+
+## Database Initialization
+
+### First-Time Setup
+
+<Steps>
+  <Step title="Install Dependencies">
+    ```bash
+    npm install
+    ```
+
+    This automatically runs `prisma generate` via the `postinstall` script.
+  </Step>
+
+  <Step title="Push Schema to Database">
+    For development and quick setup:
+
+    ```bash
+    npx prisma db push
+    ```
+
+    This command:
+    - Creates all tables based on your schema
+    - Updates existing tables if schema changed
+    - Generates Prisma Client
+    - Does NOT create migration files
+
+    <Warning>
+    `db push` is great for development but should not be used in production. Use migrations instead.
+    </Warning>
+  </Step>
+
+  <Step title="Verify Database">
+    ```bash
+    npx prisma studio
+    ```
+
+    Opens Prisma Studio at `http://localhost:5555` where you can:
+    - View all tables
+    - Inspect data
+    - Manually add/edit records
+  </Step>
+</Steps>
+
+### Using Migrations (Production)
+
+For production deployments, use migrations to track schema changes:
+
+<Steps>
+  <Step title="Create Initial Migration">
+    ```bash
+    npx prisma migrate dev --name init
+    ```
+
+    This command:
+    - Creates a `prisma/migrations` directory
+    - Generates SQL migration files
+    - Applies the migration to your database
+    - Generates Prisma Client
+  </Step>
+
+  <Step title="Apply Migrations in Production">
+    ```bash
+    npx prisma migrate deploy
+    ```
+
+    Use this in your production deployment:
+    - Applies pending migrations
+    - Does NOT generate new migrations
+    - Safe for CI/CD pipelines
+  </Step>
+</Steps>
+
+## Common Prisma Commands
+
+<CodeGroup>
+```bash Generate Client
+# Generate Prisma Client after schema changes
+npx prisma generate
+```
+
+```bash Push Schema
+# Push schema changes to database (development)
+npx prisma db push
+```
+
+```bash Create Migration
+# Create and apply migration (development)
+npx prisma migrate dev --name migration_name
+```
+
+```bash Apply Migrations
+# Apply migrations (production)
+npx prisma migrate deploy
+```
+
+```bash Reset Database
+# Drop all tables and reapply migrations
+npx prisma migrate reset
+```
+
+```bash Open Studio
+# Open Prisma Studio GUI
+npx prisma studio
+```
+
+```bash Pull Schema
+# Introspect database and update schema
+npx prisma db pull
+```
+
+```bash Format Schema
+# Format Prisma schema file
+npx prisma format
+```
+</CodeGroup>
+
+## Build Script Integration
+
+Home Manager's `package.json` includes Prisma in the build process:
+
+```json package.json
+{
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "postinstall": "prisma generate"
+  }
+}
+```
+
+- **build**: Generates Prisma Client before building Next.js
+- **postinstall**: Auto-generates client after `npm install`
+
+<Note>
+No manual Prisma commands needed during normal development. The scripts handle it automatically.
+</Note>
+
+## Production Deployment Workflow
+
+<Steps>
+  <Step title="Set Environment Variables">
+    Configure `DATABASE_URL` in your hosting platform.
+  </Step>
+
+  <Step title="Apply Migrations">
+    ```bash
+    npx prisma migrate deploy
+    ```
+
+    Add this to your deployment script or CI/CD pipeline before starting the application.
+  </Step>
+
+  <Step title="Build Application">
+    ```bash
+    npm run build
+    ```
+
+    Prisma Client is automatically generated during the build.
+  </Step>
+
+  <Step title="Start Application">
+    ```bash
+    npm start
+    ```
+  </Step>
+</Steps>
+
+## Database Connection Pooling
+
+For production environments with high traffic, use connection pooling:
+
+### Using PgBouncer (Recommended)
+
+<CodeGroup>
+```javascript prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL") // Optional: for migrations
+}
+```
+
+```bash Environment Variables
+# Pooled connection (for application)
+DATABASE_URL="postgresql://user:password@pooler.example.com:6543/db?pgbouncer=true"
+
+# Direct connection (for migrations)
+DIRECT_DATABASE_URL="postgresql://user:password@db.example.com:5432/db"
+```
+</CodeGroup>
+
+<Tip>
+Most cloud providers (Supabase, Neon, Railway) offer built-in connection pooling.
+</Tip>
+
+## Troubleshooting
+
+### Cannot Connect to Database
+
+<Warning>
+**Error:** `Can't reach database server at host:port`
+
+**Solutions:**
+- Check DATABASE_URL is correct
+- Verify database server is running
+- Check firewall/security group settings
+- For cloud databases, ensure IP is allowlisted
+- Test connection with `psql` or database client
+</Warning>
+
+### Migration Issues
+
+<Warning>
+**Error:** `Migration failed to apply`
+
+**Solutions:**
+- Check database permissions
+- Ensure no conflicting schema changes
+- Review migration SQL files in `prisma/migrations`
+- Use `prisma migrate resolve` for stuck migrations
+- Reset database with `prisma migrate reset` (development only)
+</Warning>
+
+### Prisma Client Generation Fails
+
+<Warning>
+**Error:** `Prisma Client could not be generated`
+
+**Solutions:**
+- Run `npm install` to ensure dependencies are installed
+- Check `prisma/schema.prisma` syntax
+- Verify DATABASE_URL is set
+- Delete `node_modules/.prisma` and regenerate
+- Clear npm cache: `npm cache clean --force`
+</Warning>
+
+### Schema Drift
+
+<Warning>
+**Error:** `Database schema is out of sync`
+
+**Solutions:**
+- Run `prisma db pull` to sync schema from database
+- Run `prisma migrate dev` to apply pending migrations
+- Use `prisma migrate deploy` in production
+- Check migration history: `prisma migrate status`
+</Warning>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use Migrations in Production" icon="code-branch">
+    Always use `prisma migrate deploy` instead of `db push` for production databases to maintain schema history.
+  </Card>
+
+  <Card title="Connection Pooling" icon="server">
+    Enable connection pooling for production to handle multiple concurrent requests efficiently.
+  </Card>
+
+  <Card title="Regular Backups" icon="database">
+    Set up automated backups for your PostgreSQL database. Most cloud providers offer this built-in.
+  </Card>
+
+  <Card title="Monitor Performance" icon="chart-line">
+    Use database monitoring tools to track query performance and connection usage.
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Environment Variables" icon="gear" href="/deployment/environment-variables">
+    Configure all required environment variables
+  </Card>
+  <Card title="Deployment Guide" icon="rocket" href="/deployment/deployment-guide">
+    Deploy your application to production
+  </Card>
+</CardGroup>

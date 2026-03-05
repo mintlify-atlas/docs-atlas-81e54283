@@ -1,97 +1,87 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Home Manager Documentation"
+description: "Simplify your household management with an all-in-one platform for chores, bills, shopping lists, and maintenance tracking"
 ---
 
-## Setting up
+# Welcome to Home Manager
 
-Get your documentation site up and running in minutes.
+Home Manager is a comprehensive household management platform that helps families and roommates organize their daily lives. Track chores, manage bills, create shopping lists, log maintenance tasks, and keep everyone in your household on the same page.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Get Started"
+    icon="rocket"
+    href="/quickstart"
   >
-    Edit your docs locally and preview them in real time.
+    Set up your household and start managing tasks in minutes
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Installation Guide"
+    icon="download"
+    href="/installation"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Deploy Home Manager on your own infrastructure
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
+    title="Core Features"
+    icon="house"
+    href="/features/household-management"
   >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+    Explore household creation, invitations, and member management
   </Card>
   <Card
-    title="Code samples"
+    title="API Reference"
     icon="code"
-    href="/essentials/code"
+    href="/api/overview"
   >
-    Add sample code to demonstrate how to use your product.
+    Integrate with Home Manager's REST API
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card
+    title="Chores Management"
+    icon="broom"
+    href="/features/chores"
+  >
+    Track household chores with assignees, descriptions, and recurring schedules
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="Bill Tracking"
+    icon="file-invoice-dollar"
+    href="/features/bills"
   >
-    Display images and other media.
+    Never miss a payment with bill tracking and payment logging
   </Card>
   <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
+    title="Shopping Lists"
+    icon="cart-shopping"
+    href="/features/shopping"
   >
-    Write once and reuse across your docs.
+    Create and manage shared shopping lists with categories
   </Card>
-</Columns>
+  <Card
+    title="Maintenance Logs"
+    icon="wrench"
+    href="/features/maintenance"
+  >
+    Keep track of home maintenance tasks and service history
+  </Card>
+</CardGroup>
 
-## Need inspiration?
+## Built With Modern Technology
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+Home Manager is built on a powerful tech stack designed for reliability and scalability:
+
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **Prisma ORM** - Type-safe database access
+- **PostgreSQL** - Robust relational database
+- **Clerk** - Authentication and user management
+- **Material-UI** - Beautiful, accessible components
+
+<Note>
+  Home Manager supports role-based access control with Owner, Member, and Guest roles to ensure proper permissions across your household.
+</Note>

@@ -1,0 +1,336 @@
+---
+title: 'Notifications'
+description: 'Stay informed with Home Manager activity feed and notification system'
+---
+
+## Overview
+
+Home Manager includes a notification system that keeps all household members informed about important activities and changes. Notifications are displayed in a centralized activity feed accessible from the navigation bar.
+
+## Accessing Notifications
+
+### Notification Bell Icon
+
+The notification bell is located in the top-right corner of the navigation bar:
+
+1. Look for the **bell icon** (🔔) in the navbar
+2. A **red badge** shows the number of unread notifications
+3. Click the bell icon to open the notifications modal
+
+<Info>
+The notification count updates automatically when you navigate to different pages in the app.
+</Info>
+
+### Notification Modal
+
+When you click the notification bell, a modal window opens displaying:
+
+- All notifications for your household
+- Grouped by notification type
+- Ordered by creation date (most recent first)
+- Unread notifications marked with an "Unread" badge
+
+## Notification Types
+
+Notifications are categorized by type to help you quickly identify the kind of activity:
+
+### Common Notification Categories
+
+- **Bills**: New bills added, bills marked as paid, upcoming due dates
+- **Chores**: New chores created, chores completed, overdue chores
+- **Shopping**: Items added to shopping list, items marked as purchased
+- **Maintenance**: New maintenance tasks, tasks completed, scheduled maintenance
+- **Household**: New members invited, role changes, member activity
+
+<Note>
+Notifications are grouped by type in the modal for easier navigation. Each group displays all related notifications together.
+</Note>
+
+## Notification Structure
+
+Each notification contains:
+
+- **Title**: Brief summary of the activity
+- **Body**: Detailed description or context
+- **Type**: Category of the notification
+- **Timestamp**: When the notification was created
+- **Read Status**: Whether you've viewed the notification
+
+## Managing Notifications
+
+### Viewing a Notification
+
+To view notification details:
+
+1. Open the notifications modal by clicking the bell icon
+2. Browse through the notification list
+3. Hover over a notification to highlight it
+4. Click on any notification to dismiss it
+
+<Info>
+Clicking on a notification removes it from your notification list. This helps keep your feed clean and focused on new activity.
+</Info>
+
+### Dismissing Individual Notifications
+
+To remove a single notification:
+
+1. Open the notifications modal
+2. Click on the notification you want to dismiss
+3. The notification is immediately deleted
+4. The unread count updates automatically
+
+**Implementation:**
+```typescript
+// Clicking a notification dismisses it
+// See: src/components/modals/NotificationsModal.tsx:59
+await fetch("/api/notifications/delete", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ id }),
+});
+```
+
+### Mark All as Read
+
+To clear all notifications at once:
+
+1. Open the notifications modal
+2. Scroll to the bottom of the modal
+3. Click the **Mark All as Read** button
+4. All notifications are marked as read
+5. The modal closes automatically
+
+<Warning>
+Marking all as read doesn't delete the notifications—it only marks them as read. They'll still appear in your notification list but won't contribute to the unread count.
+</Warning>
+
+### Empty Notification State
+
+When you have no notifications:
+
+- The modal displays: "No notifications yet."
+- The notification badge disappears from the bell icon
+- This indicates you're up-to-date with all household activity
+
+## Notification Behavior
+
+### Real-Time Updates
+
+Notifications update in real-time:
+
+- New notifications appear when household activity occurs
+- The unread count updates automatically
+- Opening the modal refreshes the notification list
+
+### Persistence
+
+Notifications persist across sessions:
+
+- Your notifications remain available after logging out
+- Notifications are tied to your household, not your session
+- All household members see notifications relevant to shared activities
+
+### Household-Wide Notifications
+
+Notifications are shared across the household:
+
+- All members see the same household notifications
+- No role-based filtering (owners, members, and guests see all notifications)
+- This keeps everyone informed about household activities
+
+<Note>
+Notifications are stored per household, not per user. All members of a household receive the same notifications.
+</Note>
+
+## API Endpoints
+
+### Fetching Notifications
+
+Notifications are retrieved from:
+
+```
+GET /api/notifications
+```
+
+**Response:**
+- Array of notification objects
+- Ordered by creation date (descending)
+- Filtered by your household ID
+
+**Implementation:** `src/app/api/notifications/route.ts:20`
+
+### Deleting a Notification
+
+Remove a single notification:
+
+```
+POST /api/notifications/delete
+Body: { id: "notification-id" }
+```
+
+**Effect:**
+- Removes the notification from the database
+- Updates the unread count
+
+### Clearing All Notifications
+
+Mark all notifications as read:
+
+```
+POST /api/notifications/clear
+```
+
+**Effect:**
+- Marks all household notifications as read
+- Resets the unread count to zero
+
+## Creating Notifications
+
+Notifications are automatically created by the system when significant events occur. The notification creation function is defined in `src/app/lib/notifications.ts:13`.
+
+### Notification Creation Parameters
+
+```typescript
+interface NotificationPayload {
+  householdId: string;  // The household to notify
+  type: string;         // Category of notification
+  title: string;        // Brief summary
+  body: string;         // Detailed description
+}
+```
+
+### Example Use Cases
+
+Notifications might be created for:
+
+- **New bill added**: "Electric Bill added" / "Due on Jan 15, $120.00"
+- **Chore completed**: "Kitchen Cleaning completed" / "Completed by John"
+- **Member joined**: "New member joined" / "Sarah accepted invitation"
+- **Role changed**: "Role updated" / "Mike promoted to Owner"
+
+<Info>
+Developers can trigger notifications using the `createNotification()` function from the notifications library.
+</Info>
+
+## Notification Settings
+
+### Current Behavior
+
+Currently, all notifications are:
+
+- Enabled by default
+- Shown to all household members
+- Not customizable per user
+
+### Future Enhancements
+
+Potential notification features that could be added:
+
+- Email notifications
+- Push notifications (PWA support)
+- Notification preferences per user
+- Notification muting or filtering
+- Custom notification triggers
+
+## Troubleshooting
+
+### Notifications Not Appearing
+
+**Check:**
+- You're a member of an active household
+- Your household has recent activity
+- You've refreshed the page or reopened the modal
+
+**Solution:**
+- Try clicking the notification bell to refresh
+- Navigate to another page and back to trigger a refresh
+- Check the browser console for any error messages
+
+### Unread Count Not Updating
+
+**Cause:**
+- The count is calculated based on the `read` field in the database
+- Marking notifications as read updates this field
+
+**Solution:**
+- Click "Mark All as Read" to reset the counter
+- Dismiss individual notifications to reduce the count
+- Refresh the page to recalculate the count
+
+### Modal Not Opening
+
+**Troubleshooting Steps:**
+1. Ensure you're signed in
+2. Check that JavaScript is enabled in your browser
+3. Try refreshing the page
+4. Clear your browser cache if issues persist
+
+## Best Practices
+
+### Keeping Your Feed Clean
+
+- Regularly dismiss notifications you've acted on
+- Use "Mark All as Read" periodically to clear old notifications
+- Check notifications daily to stay updated on household activities
+
+### Notification Etiquette
+
+- Respond to important notifications promptly
+- Use notifications as a communication tool with household members
+- Don't ignore overdue or urgent notifications
+
+### Performance
+
+- The notification system fetches data on demand
+- Opening the modal triggers a fresh data fetch
+- This ensures you always see the latest notifications
+
+<Note>
+Notifications are fetched when the navbar loads and again when you open the modal. This balances performance with real-time updates.
+</Note>
+
+## Technical Details
+
+### Data Model
+
+Notifications include these fields:
+
+```typescript
+interface Notification {
+  id: string;
+  householdId: string;
+  type: string;
+  title: string;
+  body: string;
+  read: boolean;
+  createdAt: string;
+}
+```
+
+### Frontend Implementation
+
+The notification modal is implemented in:
+
+- **Component**: `src/components/modals/NotificationsModal.tsx`
+- **Navbar Integration**: `src/components/layout/Navbar.tsx:86`
+- **API Integration**: `src/app/api/notifications/route.ts`
+
+### State Management
+
+Notification state is managed:
+
+- Locally within the `NotificationsModal` component
+- Unread count tracked in the `Navbar` component
+- Fetched on-demand when needed
+
+### Grouping Logic
+
+Notifications are grouped by type using:
+
+```typescript
+// src/components/modals/NotificationsModal.tsx:57
+const groupedNotifications = groupBy(notifications, "type");
+```
+
+This creates sections in the modal for each notification type.

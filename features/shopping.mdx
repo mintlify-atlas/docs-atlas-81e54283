@@ -1,0 +1,189 @@
+---
+title: "Shopping List"
+description: "Manage shared shopping lists with categories and drag-and-drop organization"
+icon: "cart-shopping"
+---
+
+## Overview
+
+The Shopping List feature provides a collaborative way for households to track items needed from the store. Organize items by category, check them off as you shop, and keep everyone in sync with real-time updates.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Category Organization" icon="folder-tree">
+    Automatically group items by Groceries, Cleaning, Household, or Other
+  </Card>
+  <Card title="Real-Time Sync" icon="rotate">
+    Changes sync instantly across all household members' devices
+  </Card>
+  <Card title="Drag & Drop" icon="up-down-left-right">
+    Reorder items within categories by dragging
+  </Card>
+  <Card title="Quick Add" icon="plus">
+    Simple two-field form lets you add items in seconds
+  </Card>
+</CardGroup>
+
+## Adding Items
+
+1. Tap the **+** floating button at the bottom right
+2. Enter the item details:
+   - **Item Name** - What you need (e.g., "Milk", "Paper towels")
+   - **Category** - Select from: Groceries, Cleaning, Household, or Other
+3. Click **Add** to save
+
+The item immediately appears in its category section for all household members.
+
+## Shopping List Categories
+
+<Tabs>
+  <Tab title="Groceries">
+    Food items, beverages, snacks, produce, dairy, meat, frozen foods, and pantry staples
+  </Tab>
+  <Tab title="Cleaning">
+    Cleaning supplies, detergents, disinfectants, paper products, trash bags, and household cleaners
+  </Tab>
+  <Tab title="Household">
+    Light bulbs, batteries, tools, office supplies, pet supplies, and home maintenance items
+  </Tab>
+  <Tab title="Other">
+    Any items that don't fit the standard categories, or special one-time purchases
+  </Tab>
+</Tabs>
+
+## Checking Off Items
+
+When you find an item at the store:
+
+1. **Tap the item** in your shopping list
+2. The item is removed from view immediately
+3. An **Undo** button appears for 3.5 seconds
+4. After 4 seconds, the item is permanently deleted
+5. The action is logged as "Completed item" in the audit trail
+
+<Note>
+  All household members see the item disappear in real-time, preventing duplicate purchases.
+</Note>
+
+## Editing Items
+
+To change an item's name or category:
+
+1. Tap the **edit icon** on the right side of the item
+2. Modify:
+   - Item name
+   - Category
+3. Click **Update** to save
+
+The item moves to the new category if you changed it, and all household members see the update immediately.
+
+## Reordering Items
+
+Organize items in the order you encounter them in the store:
+
+1. **Press and hold** an item
+2. **Drag it** to the desired position within the same category
+3. **Release** to drop it in place
+
+The new order is saved to the database and persists across all devices.
+
+<Note>
+  Items can only be reordered within their category. To move an item to a different category, use the edit function.
+</Note>
+
+## Real-Time Collaboration
+
+The shopping list is truly collaborative:
+
+- **Add items remotely** - One person can add items while another is at the store
+- **Instant updates** - Items appear and disappear in real-time for all users
+- **No conflicts** - The system handles simultaneous edits gracefully
+- **Undo safety** - The 3.5-second undo window prevents accidental removals
+
+<Warning>
+  If two people check off the same item simultaneously, the undo timer starts from whoever tapped first. The second tap won't create a duplicate undo action.
+</Warning>
+
+## Permissions
+
+Access to shopping list functionality by role:
+
+| Role | View Items | Add Items | Edit Items | Check Off Items | Reorder |
+|------|-----------|-----------|-----------|----------------|----------|
+| **Owner** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Member** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Guest** | ✅ | ❌ | ❌ | ❌ | ❌ |
+
+<Note>
+  Guests can see the shopping list but cannot make changes. This is useful for babysitters or visitors who might need to reference the list.
+</Note>
+
+## Data Model
+
+Each shopping item contains:
+
+- `id` - Unique identifier (UUID)
+- `householdId` - Links the item to your household
+- `name` - Item description
+- `category` - One of: Groceries, Cleaning, Household, Other
+- `position` - Sort order within category (0-based integer)
+- `checked` - Whether the item has been purchased (boolean)
+- `createdAt` - Timestamp when created
+
+## Audit Logging
+
+Shopping list actions are tracked:
+
+- **Added item** - When someone creates a new item
+- **Completed item** - When an item is checked off
+
+Each log includes the user name and item name for household visibility.
+
+## Mobile Shopping Tips
+
+<Accordion title="Order by Store Layout">
+  Reorder items to match your store's aisle layout. This minimizes backtracking and speeds up shopping.
+</Accordion>
+
+<Accordion title="Add While You Notice">
+  Run out of milk? Add it to the list immediately before you forget. Real-time sync means the shopper sees it instantly.
+</Accordion>
+
+<Accordion title="Use Specific Names">
+  Instead of "cereal", write "Honey Nut Cheerios" to avoid bringing home the wrong brand.
+</Accordion>
+
+<Accordion title="Check Before You Go">
+  Review the list before heading to the store to ensure everything is categorized correctly.
+</Accordion>
+
+<Accordion title="Undo Protection">
+  If you accidentally tap an item, quickly tap the Undo button within 3.5 seconds.
+</Accordion>
+
+## Common Workflows
+
+### Weekly Grocery Shopping
+
+1. Throughout the week, family members add items as they run out
+2. Before shopping, review the Groceries category
+3. Reorder items to match your store's layout
+4. While shopping, check items off as you put them in your cart
+5. Other family members see real-time updates at home
+
+### Emergency Item Requests
+
+1. Person at home realizes something is needed
+2. They add it to the list with the appropriate category
+3. Person at the store sees the new item immediately
+4. They can grab it before checking out
+
+### Store-Specific Lists
+
+While the system uses one shared list, you can manage store-specific items:
+
+1. Use the Household category for hardware store items
+2. Use Groceries for the supermarket
+3. Use Cleaning for bulk stores or specialty shops
+4. Check off items only when you're at the relevant store

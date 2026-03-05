@@ -1,0 +1,484 @@
+---
+title: 'Bills API'
+description: 'Track and manage household bills and payments'
+---
+
+## Overview
+
+The Bills API enables you to manage household bills, including tracking amounts, due dates, categories, and payment status. It also provides monthly bill aggregations.
+
+## Endpoints
+
+### Get All Bills
+
+<ParamField path="GET /api/bills" type="endpoint">
+  Retrieves all bills for the authenticated user's household, ordered by position.
+</ParamField>
+
+**Authentication**: Required
+
+**Response**
+
+<ResponseField name="bills" type="array">
+  Array of bill objects
+</ResponseField>
+
+<Expandable title="Bill Object Fields">
+  <ResponseField name="id" type="string">
+    Unique identifier
+  </ResponseField>
+  
+  <ResponseField name="householdId" type="string">
+    ID of the household this bill belongs to
+  </ResponseField>
+  
+  <ResponseField name="name" type="string">
+    Name of the bill (e.g., "Electric Bill")
+  </ResponseField>
+  
+  <ResponseField name="amount" type="number">
+    Bill amount in dollars
+  </ResponseField>
+  
+  <ResponseField name="dueDate" type="datetime">
+    When the bill is due
+  </ResponseField>
+  
+  <ResponseField name="category" type="string">
+    Bill category (e.g., "Utilities", "Insurance")
+  </ResponseField>
+  
+  <ResponseField name="position" type="number">
+    Position for ordering in the list
+  </ResponseField>
+  
+  <ResponseField name="checked" type="boolean">
+    Whether the bill has been paid (default: false)
+  </ResponseField>
+  
+  <ResponseField name="createdAt" type="datetime">
+    Creation timestamp
+  </ResponseField>
+  
+  <ResponseField name="updatedAt" type="datetime">
+    Last update timestamp
+  </ResponseField>
+</Expandable>
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/bills \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/bills');
+const bills = await response.json();
+```
+</CodeGroup>
+
+**Example Response**
+
+```json
+[
+  {
+    "id": "clx123abc",
+    "householdId": "clx456def",
+    "name": "Electric Bill",
+    "amount": 125.50,
+    "dueDate": "2024-03-25T00:00:00Z",
+    "category": "Utilities",
+    "position": 0,
+    "checked": false,
+    "createdAt": "2024-03-01T10:00:00Z",
+    "updatedAt": "2024-03-01T10:00:00Z"
+  },
+  {
+    "id": "clx789ghi",
+    "householdId": "clx456def",
+    "name": "Internet",
+    "amount": 79.99,
+    "dueDate": "2024-03-15T00:00:00Z",
+    "category": "Utilities",
+    "position": 1,
+    "checked": true,
+    "createdAt": "2024-03-01T11:00:00Z",
+    "updatedAt": "2024-03-15T09:30:00Z"
+  }
+]
+```
+
+---
+
+### Create or Reorder Bills
+
+<ParamField path="POST /api/bills" type="endpoint">
+  Creates a new bill or reorders existing bills.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body (Create)**
+
+<ParamField name="name" type="string" required>
+  Name of the bill
+</ParamField>
+
+<ParamField name="amount" type="number" required>
+  Bill amount in dollars
+</ParamField>
+
+<ParamField name="dueDate" type="string" required>
+  Due date (ISO 8601 format)
+</ParamField>
+
+<ParamField name="category" type="string" required>
+  Bill category
+</ParamField>
+
+**Request Body (Reorder)**
+
+<ParamField name="orderedIds" type="array" required>
+  Array of bill IDs in the desired order
+</ParamField>
+
+<CodeGroup>
+```bash Create Bill
+curl -X POST https://your-domain.com/api/bills \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Car Insurance",
+    "amount": 250.00,
+    "dueDate": "2024-04-01T00:00:00Z",
+    "category": "Insurance"
+  }'
+```
+
+```bash Reorder Bills
+curl -X POST https://your-domain.com/api/bills \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orderedIds": ["clx789ghi", "clx123abc"]
+  }'
+```
+
+```javascript Create Bill
+const response = await fetch('/api/bills', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'Car Insurance',
+    amount: 250.00,
+    dueDate: '2024-04-01T00:00:00Z',
+    category: 'Insurance',
+  }),
+});
+
+const newBill = await response.json();
+```
+</CodeGroup>
+
+**Response (Create)**
+
+```json
+{
+  "id": "clxnew123",
+  "householdId": "clx456def",
+  "name": "Car Insurance",
+  "amount": 250.00,
+  "dueDate": "2024-04-01T00:00:00Z",
+  "category": "Insurance",
+  "position": 2,
+  "checked": false,
+  "createdAt": "2024-03-15T12:00:00Z",
+  "updatedAt": "2024-03-15T12:00:00Z"
+}
+```
+
+**Response (Reorder)**
+
+```
+Positions updated
+```
+
+Status: `200 OK`
+
+---
+
+### Update Bill
+
+<ParamField path="POST /api/bills/update" type="endpoint">
+  Updates an existing bill's details.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="id" type="string" required>
+  ID of the bill to update
+</ParamField>
+
+<ParamField name="name" type="string" required>
+  Updated name
+</ParamField>
+
+<ParamField name="amount" type="number" required>
+  Updated amount
+</ParamField>
+
+<ParamField name="dueDate" type="string" required>
+  Updated due date
+</ParamField>
+
+<ParamField name="category" type="string" required>
+  Updated category
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/bills/update \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "clx123abc",
+    "name": "Electric Bill",
+    "amount": 135.75,
+    "dueDate": "2024-03-28T00:00:00Z",
+    "category": "Utilities"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/bills/update', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    id: 'clx123abc',
+    name: 'Electric Bill',
+    amount: 135.75,
+    dueDate: '2024-03-28T00:00:00Z',
+    category: 'Utilities',
+  }),
+});
+
+const result = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "count": 1
+}
+```
+
+---
+
+### Delete Bill
+
+<ParamField path="POST /api/bills/delete" type="endpoint">
+  Deletes (marks as paid) a bill and creates a payment notification.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="id" type="string" required>
+  ID of the bill to delete
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/bills/delete \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "clx123abc"}'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/bills/delete', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ id: 'clx123abc' }),
+});
+
+const deletedBill = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "id": "clx123abc",
+  "householdId": "clx456def",
+  "name": "Electric Bill",
+  "amount": 125.50,
+  "dueDate": "2024-03-25T00:00:00Z",
+  "category": "Utilities",
+  "position": 0,
+  "checked": false,
+  "createdAt": "2024-03-01T10:00:00Z",
+  "updatedAt": "2024-03-01T10:00:00Z"
+}
+```
+
+<Note>
+  When a bill is deleted, a notification is automatically created with:
+  - **Type**: "bills"
+  - **Title**: "Bill Paid"
+  - **Body**: "You paid: [bill name] for $[amount]"
+</Note>
+
+---
+
+### Get Bills Count
+
+<ParamField path="GET /api/bills/count" type="endpoint">
+  Returns the total number of bills for the household.
+</ParamField>
+
+**Authentication**: Required
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/bills/count \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/bills/count');
+const { count } = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "count": 8
+}
+```
+
+---
+
+### Get Monthly Bills Overview
+
+<ParamField path="GET /api/bills/monthly" type="endpoint">
+  Returns aggregated bill data for 5 months (2 past, current, 2 future).
+</ParamField>
+
+**Authentication**: Required
+
+**Response**
+
+<ResponseField name="data" type="array">
+  Array of monthly bill summaries
+</ResponseField>
+
+<Expandable title="Monthly Summary Fields">
+  <ResponseField name="month" type="string">
+    Month abbreviation (e.g., "Jan", "Feb", "Mar")
+  </ResponseField>
+  
+  <ResponseField name="total" type="number">
+    Total amount of all bills due in this month
+  </ResponseField>
+  
+  <ResponseField name="paid" type="number">
+    Total amount of checked (paid) bills in this month
+  </ResponseField>
+</Expandable>
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/bills/monthly \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/bills/monthly');
+const monthlyData = await response.json();
+```
+</CodeGroup>
+
+**Example Response**
+
+```json
+[
+  {
+    "month": "Jan",
+    "total": 450.25,
+    "paid": 450.25
+  },
+  {
+    "month": "Feb",
+    "total": 523.00,
+    "paid": 523.00
+  },
+  {
+    "month": "Mar",
+    "total": 612.50,
+    "paid": 205.50
+  },
+  {
+    "month": "Apr",
+    "total": 475.00,
+    "paid": 0
+  },
+  {
+    "month": "May",
+    "total": 0,
+    "paid": 0
+  }
+]
+```
+
+<Note>
+  The monthly endpoint uses `date-fns` functions to calculate date ranges and aggregates bills based on their `dueDate` field. It considers a bill as "paid" if the `checked` field is `true`.
+</Note>
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  User is not authenticated
+</ResponseField>
+
+```
+Unauthorized
+```
+
+<ResponseField name="400 Bad Request">
+  Missing required fields or invalid data
+</ResponseField>
+
+```
+Missing fields
+```
+
+or
+
+```
+Missing or invalid ID
+```
+
+<ResponseField name="500 Internal Server Error">
+  Unexpected server error
+</ResponseField>
+
+```
+Internal Server Error
+```
+
+## Source Code Reference
+
+- Main routes: `~/workspace/source/src/app/api/bills/route.ts:19`
+- Count endpoint: `~/workspace/source/src/app/api/bills/count/route.ts:19`
+- Delete endpoint: `~/workspace/source/src/app/api/bills/delete/route.ts:21`
+- Update endpoint: `~/workspace/source/src/app/api/bills/update/route.ts:19`
+- Monthly overview: `~/workspace/source/src/app/api/bills/monthly/route.ts:18`

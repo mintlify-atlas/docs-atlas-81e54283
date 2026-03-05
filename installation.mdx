@@ -1,0 +1,675 @@
+---
+title: Self-Hosted Installation
+description: Complete guide to deploying Home Manager on your own infrastructure with Docker, Vercel, or custom hosting
+---
+
+## Overview
+
+This guide covers deploying Home Manager on your own infrastructure. You'll learn how to set up the database, configure authentication, and deploy the application.
+
+<Warning>
+  Self-hosting requires technical knowledge of Node.js, PostgreSQL, and environment configuration. If you're looking for a quick start without infrastructure setup, consider using a managed hosting service.
+</Warning>
+
+## Prerequisites
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    Version 20.x or higher required
+  </Card>
+  
+  <Card title="PostgreSQL" icon="database">
+    Version 14 or higher (local or cloud-hosted)
+  </Card>
+  
+  <Card title="Clerk Account" icon="key">
+    Free account for authentication service
+  </Card>
+  
+  <Card title="Git" icon="git-alt">
+    For cloning the repository
+  </Card>
+</CardGroup>
+
+## Installation Methods
+
+Choose your preferred deployment method:
+
+<Tabs>
+  <Tab title="Docker">
+    Recommended for production deployments
+  </Tab>
+  <Tab title="Vercel">
+    Best for quick deployments with zero configuration
+  </Tab>
+  <Tab title="Local Development">
+    For development and testing
+  </Tab>
+  <Tab title="Custom Server">
+    Deploy to your own VPS or dedicated server
+  </Tab>
+</Tabs>
+
+## Step 1: Clone the Repository
+
+<Steps>
+  <Step title="Clone from GitHub">
+    ```bash
+    git clone https://github.com/Alexander-Malpica/home-manager-app.git
+    cd home-manager-app
+    ```
+  </Step>
+  
+  <Step title="Install Dependencies">
+    Home Manager uses npm for package management:
+    
+    ```bash
+    npm install
+    ```
+    
+    This installs all required dependencies from `package.json`:
+    - Next.js 15.3.2
+    - React 19
+    - Prisma 6.8.2
+    - Clerk authentication
+    - Material-UI 7.1.0
+    - And more...
+  </Step>
+</Steps>
+
+<Note>
+  The `postinstall` script automatically runs `prisma generate` after installation.
+</Note>
+
+## Step 2: Set Up PostgreSQL Database
+
+### Option A: Local PostgreSQL
+
+<Steps>
+  <Step title="Install PostgreSQL">
+    Install PostgreSQL 14+ on your system:
+    
+    ```bash Ubuntu/Debian
+    sudo apt update
+    sudo apt install postgresql postgresql-contrib
+    ```
+    
+    ```bash macOS (Homebrew)
+    brew install postgresql@14
+    brew services start postgresql@14
+    ```
+  </Step>
+  
+  <Step title="Create Database">
+    ```bash
+    sudo -u postgres psql
+    ```
+    
+    ```sql
+    CREATE DATABASE home_manager;
+    CREATE USER home_manager_user WITH ENCRYPTED PASSWORD 'your_secure_password';
+    GRANT ALL PRIVILEGES ON DATABASE home_manager TO home_manager_user;
+    \q
+    ```
+  </Step>
+  
+  <Step title="Get Connection String">
+    Your `DATABASE_URL` will be:
+    
+    ```
+    postgresql://home_manager_user:your_secure_password@localhost:5432/home_manager
+    ```
+  </Step>
+</Steps>
+
+### Option B: Cloud PostgreSQL
+
+Use a managed PostgreSQL service:
+
+<CardGroup cols={3}>
+  <Card title="Supabase" icon="database">
+    Free tier available with generous limits
+  </Card>
+  
+  <Card title="Neon" icon="database">
+    Serverless Postgres with instant scaling
+  </Card>
+  
+  <Card title="Railway" icon="database">
+    Simple deployment with built-in PostgreSQL
+  </Card>
+</CardGroup>
+
+Each service provides a connection string in the format:
+```
+postgresql://user:password@host:port/database?sslmode=require
+```
+
+## Step 3: Configure Clerk Authentication
+
+<Steps>
+  <Step title="Create Clerk Account">
+    1. Visit [clerk.com](https://clerk.com) and sign up
+    2. Create a new application
+    3. Choose authentication methods (Email, Google, GitHub, etc.)
+  </Step>
+  
+  <Step title="Get API Keys">
+    From your Clerk dashboard, navigate to **API Keys** and copy:
+    
+    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (starts with `pk_test_...` or `pk_live_...`)
+    - `CLERK_SECRET_KEY` (starts with `sk_test_...` or `sk_live_...`)
+  </Step>
+  
+  <Step title="Configure Allowed Domains">
+    In Clerk dashboard, add your application domains:
+    
+    - For local development: `http://localhost:3000`
+    - For production: `https://yourdomain.com`
+  </Step>
+  
+  <Step title="Set Redirect URLs">
+    Configure these redirect URLs in Clerk:
+    
+    - **Sign-in redirect**: `/dashboard`
+    - **Sign-up redirect**: `/dashboard`
+    - **Sign-out redirect**: `/`
+  </Step>
+</Steps>
+
+<Note>
+  Clerk provides the authentication UI components used in `src/app/page.tsx` and handles all user management, password resets, and security.
+</Note>
+
+## Step 4: Environment Configuration
+
+Create a `.env.local` file in the project root:
+
+```bash .env.local
+# Database Connection
+DATABASE_URL="postgresql://user:password@host:port/database"
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
+
+# Optional: Clerk Frontend API (usually auto-detected)
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
+```
+
+<Warning>
+  Never commit `.env.local` to version control. The `.gitignore` file already excludes `.env*` files.
+</Warning>
+
+### Environment Variables Reference
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `CLERK_SECRET_KEY` | Yes | Server-side Clerk authentication key |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Client-side Clerk publishable key |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | No | Custom sign-in page path (default: `/`) |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | No | Redirect after sign-in (default: `/dashboard`) |
+
+## Step 5: Initialize Database Schema
+
+Home Manager uses Prisma ORM for database management:
+
+<Steps>
+  <Step title="Generate Prisma Client">
+    ```bash
+    npx prisma generate
+    ```
+    
+    This generates the Prisma client from `prisma/schema.prisma`.
+  </Step>
+  
+  <Step title="Push Database Schema">
+    ```bash
+    npx prisma db push
+    ```
+    
+    This creates all required tables:
+    - `Household`
+    - `HouseholdMember`
+    - `ChoresItem`
+    - `BillsItem`
+    - `ShoppingItem`
+    - `MaintenanceItem`
+    - `Notification`
+    - `AuditLog`
+  </Step>
+  
+  <Step title="Verify Database (Optional)">
+    Use Prisma Studio to browse your database:
+    
+    ```bash
+    npx prisma studio
+    ```
+    
+    Opens at `http://localhost:5555`
+  </Step>
+</Steps>
+
+<Note>
+  For production, consider using `prisma migrate deploy` instead of `db push` to maintain migration history.
+</Note>
+
+## Step 6: Build and Deploy
+
+### Local Development
+
+```bash
+npm run dev
+```
+
+The application starts at `http://localhost:3000` with Turbopack for fast hot-reloading.
+
+### Production Build
+
+<Steps>
+  <Step title="Build the Application">
+    ```bash
+    npm run build
+    ```
+    
+    This:
+    1. Runs `prisma generate`
+    2. Compiles TypeScript
+    3. Optimizes React components
+    4. Generates static pages
+    5. Creates production bundles
+  </Step>
+  
+  <Step title="Start Production Server">
+    ```bash
+    npm start
+    ```
+    
+    Serves the optimized build on port 3000.
+  </Step>
+</Steps>
+
+### Deploy to Vercel
+
+<Steps>
+  <Step title="Install Vercel CLI">
+    ```bash
+    npm install -g vercel
+    ```
+  </Step>
+  
+  <Step title="Deploy">
+    ```bash
+    vercel
+    ```
+    
+    Follow the prompts to link your project.
+  </Step>
+  
+  <Step title="Configure Environment Variables">
+    In Vercel dashboard, add your environment variables:
+    - `DATABASE_URL`
+    - `CLERK_SECRET_KEY`
+    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+  </Step>
+  
+  <Step title="Deploy to Production">
+    ```bash
+    vercel --prod
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  Vercel automatically detects Next.js and configures build settings. No additional configuration needed.
+</Note>
+
+### Deploy with Docker
+
+Create a `Dockerfile`:
+
+```dockerfile Dockerfile
+FROM node:20-alpine AS base
+
+# Install dependencies
+FROM base AS deps
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+# Build application
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN npx prisma generate
+RUN npm run build
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
+```
+
+Build and run:
+
+```bash
+docker build -t home-manager .
+docker run -p 3000:3000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e CLERK_SECRET_KEY="sk_..." \
+  -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..." \
+  home-manager
+```
+
+### Deploy to Custom Server
+
+For VPS or dedicated servers:
+
+<Steps>
+  <Step title="Transfer Files">
+    ```bash
+    scp -r home-manager-app user@your-server:/var/www/
+    ```
+  </Step>
+  
+  <Step title="Install Node.js and PostgreSQL">
+    On your server:
+    ```bash
+    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+    sudo apt install -y nodejs postgresql
+    ```
+  </Step>
+  
+  <Step title="Configure Environment">
+    Create `.env.local` on the server with your configuration
+  </Step>
+  
+  <Step title="Install and Build">
+    ```bash
+    cd /var/www/home-manager-app
+    npm install
+    npx prisma db push
+    npm run build
+    ```
+  </Step>
+  
+  <Step title="Use Process Manager">
+    Install PM2 for process management:
+    
+    ```bash
+    npm install -g pm2
+    pm2 start npm --name "home-manager" -- start
+    pm2 startup
+    pm2 save
+    ```
+  </Step>
+  
+  <Step title="Configure Reverse Proxy">
+    Use Nginx or Apache to proxy to port 3000:
+    
+    ```nginx /etc/nginx/sites-available/home-manager
+    server {
+        listen 80;
+        server_name yourdomain.com;
+        
+        location / {
+            proxy_pass http://localhost:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+    ```
+  </Step>
+  
+  <Step title="Enable SSL with Certbot">
+    ```bash
+    sudo apt install certbot python3-certbot-nginx
+    sudo certbot --nginx -d yourdomain.com
+    ```
+  </Step>
+</Steps>
+
+## Step 7: Post-Deployment Configuration
+
+### Configure Clerk for Production
+
+1. Update Clerk dashboard with production domain
+2. Switch from test keys to live keys
+3. Configure production sign-in/sign-up URLs
+
+### Database Backup Strategy
+
+<Steps>
+  <Step title="Automated Backups">
+    ```bash
+    # Cron job for daily backups
+    0 2 * * * pg_dump -U home_manager_user home_manager > /backups/home_manager_$(date +\%Y\%m\%d).sql
+    ```
+  </Step>
+  
+  <Step title="Retention Policy">
+    Keep 30 daily, 12 monthly backups
+  </Step>
+</Steps>
+
+### Monitoring and Logging
+
+Consider implementing:
+- Application monitoring (e.g., Sentry, LogRocket)
+- Database monitoring (connection pools, slow queries)
+- Server monitoring (CPU, memory, disk usage)
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Database connection fails">
+    **Symptoms**: `PrismaClientInitializationError`
+    
+    **Solutions**:
+    - Verify `DATABASE_URL` format is correct
+    - Check PostgreSQL is running: `sudo systemctl status postgresql`
+    - Verify user has correct permissions: `GRANT ALL PRIVILEGES ON DATABASE home_manager TO home_manager_user;`
+    - For cloud databases, ensure SSL mode is set: `?sslmode=require`
+  </Accordion>
+  
+  <Accordion title="Clerk authentication not working">
+    **Symptoms**: Redirect loops, 401 errors
+    
+    **Solutions**:
+    - Verify all Clerk environment variables are set correctly
+    - Check that domain is added to Clerk allowed origins
+    - Ensure you're using the correct keys (test vs. live)
+    - Clear browser cookies and try again
+    - Review middleware configuration in `src/middleware.ts`
+  </Accordion>
+  
+  <Accordion title="Build fails with Prisma errors">
+    **Symptoms**: `Cannot find module '@prisma/client'`
+    
+    **Solutions**:
+    - Run `npx prisma generate` before building
+    - Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
+    - Ensure `DATABASE_URL` is set during build (required for Prisma)
+  </Accordion>
+  
+  <Accordion title="Port 3000 already in use">
+    **Solutions**:
+    ```bash
+    # Find process using port 3000
+    lsof -i :3000
+    
+    # Kill the process
+    kill -9 <PID>
+    
+    # Or use a different port
+    PORT=3001 npm start
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Security Best Practices
+
+<Warning>
+  Follow these security guidelines for production deployments:
+</Warning>
+
+1. **Use strong database passwords**: Generate random 32+ character passwords
+2. **Enable SSL/TLS**: Always use HTTPS in production
+3. **Restrict database access**: Only allow connections from application server IP
+4. **Regular updates**: Keep dependencies up to date with `npm audit`
+5. **Environment isolation**: Never reuse credentials between staging and production
+6. **Backup encryption**: Encrypt database backups at rest
+7. **Rate limiting**: Implement rate limiting on API routes (consider Clerk rate limits)
+
+## Performance Optimization
+
+### Database Optimization
+
+```sql
+-- Add indexes for better query performance
+CREATE INDEX idx_chores_household ON "ChoresItem"("householdId");
+CREATE INDEX idx_bills_household ON "BillsItem"("householdId");
+CREATE INDEX idx_shopping_household ON "ShoppingItem"("householdId");
+CREATE INDEX idx_maintenance_household ON "MaintenanceItem"("householdId");
+CREATE INDEX idx_household_members_user ON "HouseholdMember"("userId");
+```
+
+### Next.js Optimization
+
+The application is already optimized with:
+- Server-side rendering for initial page loads
+- API routes for backend logic
+- Turbopack for fast development builds
+- Material-UI emotion cache for CSS-in-JS performance
+
+## Maintenance Tasks
+
+### Regular Maintenance Checklist
+
+- [ ] Weekly: Review application logs for errors
+- [ ] Weekly: Check database size and growth
+- [ ] Monthly: Update dependencies (`npm update`)
+- [ ] Monthly: Review Clerk usage and limits
+- [ ] Quarterly: Database vacuum and analyze
+- [ ] Quarterly: Review and rotate API keys
+
+### Database Maintenance
+
+```sql
+-- Vacuum and analyze (PostgreSQL)
+VACUUM ANALYZE;
+
+-- Check database size
+SELECT pg_size_pretty(pg_database_size('home_manager'));
+```
+
+## Upgrading
+
+To upgrade to a new version:
+
+<Steps>
+  <Step title="Backup Database">
+    ```bash
+    pg_dump -U home_manager_user home_manager > backup_before_upgrade.sql
+    ```
+  </Step>
+  
+  <Step title="Pull Latest Changes">
+    ```bash
+    git pull origin main
+    ```
+  </Step>
+  
+  <Step title="Update Dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+  
+  <Step title="Run Migrations">
+    ```bash
+    npx prisma migrate deploy
+    ```
+  </Step>
+  
+  <Step title="Rebuild and Restart">
+    ```bash
+    npm run build
+    pm2 restart home-manager
+    ```
+  </Step>
+</Steps>
+
+## Support and Resources
+
+<CardGroup cols={2}>
+  <Card title="GitHub Repository" icon="github" href="https://github.com/Alexander-Malpica/home-manager-app">
+    Source code, issues, and contributions
+  </Card>
+  
+  <Card title="Clerk Documentation" icon="book" href="https://clerk.com/docs">
+    Authentication setup and configuration
+  </Card>
+  
+  <Card title="Prisma Documentation" icon="database" href="https://www.prisma.io/docs">
+    Database management and queries
+  </Card>
+  
+  <Card title="Next.js Documentation" icon="react" href="https://nextjs.org/docs">
+    Framework documentation and guides
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+After successful installation:
+
+<Steps>
+  <Step title="Test All Features">
+    Create test households, chores, and bills to verify functionality
+  </Step>
+  
+  <Step title="Configure Backups">
+    Set up automated database backups
+  </Step>
+  
+  <Step title="Set Up Monitoring">
+    Implement error tracking and performance monitoring
+  </Step>
+  
+  <Step title="Train Users">
+    Share the [Quick Start Guide](/quickstart) with your users
+  </Step>
+</Steps>

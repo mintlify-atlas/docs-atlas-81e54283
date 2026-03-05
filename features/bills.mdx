@@ -1,0 +1,198 @@
+---
+title: "Bills"
+description: "Track bills with due dates, amounts, and payment logging organized by category"
+icon: "money-bill"
+---
+
+## Overview
+
+The Bills feature helps you stay on top of recurring payments by tracking due dates, amounts, and payment status. Organize bills by category and never miss a payment with visual reminders and easy logging.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Due Date Tracking" icon="calendar">
+    Monitor when each bill is due with clear date displays
+  </Card>
+  <Card title="Amount Management" icon="dollar-sign">
+    Track exact amounts for each bill with currency formatting
+  </Card>
+  <Card title="Category Organization" icon="folder">
+    Group bills by category: Utilities, Rent, Internet, Phone, and Other
+  </Card>
+  <Card title="Payment Logging" icon="check-circle">
+    Mark bills as paid with undo functionality for accidental clicks
+  </Card>
+</CardGroup>
+
+## Creating a Bill
+
+1. Click the **+** floating button at the bottom right of the Bills page
+2. Fill in the bill details:
+   - **Bill Name** - Description of the bill (e.g., "Electric Company")
+   - **Amount** - Dollar amount (e.g., 125.50)
+   - **Due Date** - When payment is due (use the date picker)
+   - **Category** - Select from: Utilities, Rent, Internet, Phone, or Other
+3. Click **Add** to save the bill
+
+The bill will appear in its category section automatically.
+
+## Viewing Bills
+
+Bills are automatically organized into category sections:
+
+<Tabs>
+  <Tab title="Utilities">
+    Electric, gas, water, trash, and other utility bills
+  </Tab>
+  <Tab title="Rent">
+    Monthly rent or mortgage payments
+  </Tab>
+  <Tab title="Internet">
+    Internet service provider bills
+  </Tab>
+  <Tab title="Phone">
+    Mobile and landline phone bills
+  </Tab>
+  <Tab title="Other">
+    Any bills that don't fit the standard categories
+  </Tab>
+</Tabs>
+
+Each bill displays:
+- **Bill name** as the main text
+- **Amount** formatted as currency (e.g., $125.50)
+- **Due date** in localized format
+
+## Marking Bills as Paid
+
+When you pay a bill:
+
+1. **Tap the bill item** in the list
+2. The bill is immediately removed from view
+3. An **Undo** button appears for 3.5 seconds - tap it if you made a mistake
+4. After 4 seconds, the bill is permanently deleted from the system
+5. The action is logged to the audit trail as "Marked bill as paid"
+
+<Warning>
+  Once marked as paid, bills are deleted rather than archived. Make sure to confirm before the undo timer expires.
+</Warning>
+
+<Note>
+  For recurring bills, you'll need to create a new entry each month. This gives you flexibility to update amounts that may change.
+</Note>
+
+## Editing a Bill
+
+1. Tap the **edit icon** on the right side of any bill
+2. Update any field:
+   - Bill name
+   - Amount
+   - Due date
+   - Category
+3. Click **Update** to save
+
+Changes sync instantly across all household members' devices.
+
+## Reordering Bills Within Categories
+
+Within each category section, you can reorder bills:
+
+1. **Press and hold** a bill item
+2. **Drag it** up or down within the same category
+3. **Release** to drop it in the new position
+
+<Note>
+  Bills can only be reordered within their category. To move a bill to a different category, use the edit function.
+</Note>
+
+## Bill Categories
+
+<Accordion title="Utilities">
+  **Best for:** Electric, gas, water, sewer, trash collection, waste management
+  
+  Use this category for essential home services that vary month-to-month.
+</Accordion>
+
+<Accordion title="Rent">
+  **Best for:** Monthly rent, mortgage payments, HOA fees
+  
+  Use this for your primary housing cost. Most households will have just one item here.
+</Accordion>
+
+<Accordion title="Internet">
+  **Best for:** ISP bills, home WiFi service, fiber optic connections
+  
+  Dedicated category for internet service providers given how essential connectivity is.
+</Accordion>
+
+<Accordion title="Phone">
+  **Best for:** Cell phone plans, landline service, family phone plans
+  
+  Track mobile and landline phone bills separately from internet.
+</Accordion>
+
+<Accordion title="Other">
+  **Best for:** Streaming services, insurance, subscriptions, storage units
+  
+  Catch-all category for bills that don't fit elsewhere. Consider if these are better tracked in a separate subscription manager.
+</Accordion>
+
+## Permissions
+
+Access to bills functionality varies by household role:
+
+| Role | View Bills | Add Bills | Edit Bills | Mark as Paid | Reorder |
+|------|-----------|-----------|------------|--------------|----------|
+| **Owner** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Member** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Guest** | ✅ | ❌ | ❌ | ❌ | ❌ |
+
+<Note>
+  Guest users can see all bills but cannot modify them. This is useful for financial advisors or family members who need visibility without editing rights.
+</Note>
+
+## Data Model
+
+Each bill contains the following fields:
+
+- `id` - Unique identifier (UUID)
+- `householdId` - Links the bill to your household
+- `name` - Bill description
+- `amount` - Dollar amount (stored as Float)
+- `dueDate` - Payment due date (DateTime)
+- `category` - One of: Utilities, Rent, Internet, Phone, Other
+- `position` - Sort order within category
+- `checked` - Payment status (boolean)
+- `createdAt` - Timestamp when created
+
+## Audit Logging
+
+Bill actions are automatically logged:
+
+- **Added bill** - When a new bill is created
+- **Marked bill as paid** - When a bill is completed/removed
+
+Each log entry includes the user name, action, and bill name for household transparency.
+
+## Tips & Best Practices
+
+<Accordion title="Add Bills When You Receive Them">
+  Log bills as soon as you get the notice, not when they're due. This gives you time to budget.
+</Accordion>
+
+<Accordion title="Use Consistent Naming">
+  Name bills consistently (e.g., always "PG&E" not sometimes "Electric Bill") for easier tracking over time.
+</Accordion>
+
+<Accordion title="Order by Due Date">
+  Within each category, drag bills to order them by due date so urgent payments appear first.
+</Accordion>
+
+<Accordion title="Review Monthly">
+  At the start of each month, review all categories to ensure no bills were missed.
+</Accordion>
+
+<Accordion title="Track Variable Amounts">
+  For bills that change (like utilities), note previous amounts in a spreadsheet to spot unusual increases.
+</Accordion>

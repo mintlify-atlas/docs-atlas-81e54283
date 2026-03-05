@@ -1,0 +1,285 @@
+---
+title: 'Notifications API'
+description: 'View and manage household notifications'
+---
+
+## Overview
+
+The Notifications API allows you to retrieve and manage notifications that are automatically generated when certain household activities occur (completing chores, paying bills, etc.).
+
+## Endpoints
+
+### Get All Notifications
+
+<ParamField path="GET /api/notifications" type="endpoint">
+  Retrieves all notifications for the authenticated user's household, ordered by most recent first.
+</ParamField>
+
+**Authentication**: Required
+
+**Response**
+
+<ResponseField name="notifications" type="array">
+  Array of notification objects
+</ResponseField>
+
+<Expandable title="Notification Object Fields">
+  <ResponseField name="id" type="string">
+    Unique identifier
+  </ResponseField>
+  
+  <ResponseField name="householdId" type="string">
+    ID of the household this notification belongs to
+  </ResponseField>
+  
+  <ResponseField name="type" type="string">
+    Notification type: "chores", "bills", "shopping", "maintenance"
+  </ResponseField>
+  
+  <ResponseField name="title" type="string">
+    Notification title
+  </ResponseField>
+  
+  <ResponseField name="body" type="string">
+    Notification message body
+  </ResponseField>
+  
+  <ResponseField name="read" type="boolean">
+    Whether the notification has been read (default: false)
+  </ResponseField>
+  
+  <ResponseField name="createdAt" type="datetime">
+    When the notification was created
+  </ResponseField>
+</Expandable>
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://your-domain.com/api/notifications \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/notifications');
+const notifications = await response.json();
+```
+</CodeGroup>
+
+**Example Response**
+
+```json
+[
+  {
+    "id": "clxnot1",
+    "householdId": "clx456def",
+    "type": "chores",
+    "title": "Chore Completed",
+    "body": "You completed: Vacuum living room",
+    "read": false,
+    "createdAt": "2024-03-15T14:30:00Z"
+  },
+  {
+    "id": "clxnot2",
+    "householdId": "clx456def",
+    "type": "bills",
+    "title": "Bill Paid",
+    "body": "You paid: Electric Bill for $125.50",
+    "read": true,
+    "createdAt": "2024-03-15T10:15:00Z"
+  },
+  {
+    "id": "clxnot3",
+    "householdId": "clx456def",
+    "type": "shopping",
+    "title": "Item Removed",
+    "body": "You completed: Milk",
+    "read": false,
+    "createdAt": "2024-03-15T09:45:00Z"
+  },
+  {
+    "id": "clxnot4",
+    "householdId": "clx456def",
+    "type": "maintenance",
+    "title": "Maintenance Completed",
+    "body": "Task completed: Replace air filter",
+    "read": true,
+    "createdAt": "2024-03-14T16:20:00Z"
+  }
+]
+```
+
+---
+
+### Delete Notification
+
+<ParamField path="POST /api/notifications/delete" type="endpoint">
+  Deletes a specific notification.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="id" type="string" required>
+  ID of the notification to delete
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/notifications/delete \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "clxnot1"}'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/notifications/delete', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ id: 'clxnot1' }),
+});
+
+const result = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "message": "Notification deleted"
+}
+```
+
+---
+
+### Clear All Notifications
+
+<ParamField path="POST /api/notifications/clear" type="endpoint">
+  Deletes all notifications for the authenticated user's household.
+</ParamField>
+
+**Authentication**: Required
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/notifications/clear \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN"
+```
+
+```javascript JavaScript
+const response = await fetch('/api/notifications/clear', {
+  method: 'POST',
+});
+
+const result = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+```json
+{
+  "message": "Notifications cleared"
+}
+```
+
+## Automatic Notification Creation
+
+Notifications are automatically created when certain actions occur:
+
+### Chores
+When a chore is deleted via `POST /api/chores/delete`:
+- **Type**: "chores"
+- **Title**: "Chore Completed"
+- **Body**: "You completed: [chore name]"
+
+### Bills
+When a bill is deleted via `POST /api/bills/delete`:
+- **Type**: "bills"
+- **Title**: "Bill Paid"
+- **Body**: "You paid: [bill name] for $[amount]"
+
+### Shopping
+When a shopping item is deleted via `POST /api/shopping/delete`:
+- **Type**: "shopping"
+- **Title**: "Item Removed"
+- **Body**: "You completed: [item name]"
+
+### Maintenance
+When a maintenance item is deleted via `POST /api/maintenance/delete`:
+- **Type**: "maintenance"
+- **Title**: "Maintenance Completed"
+- **Body**: "Task completed: [title]"
+
+## Notification Library
+
+The API uses the `createNotification` function from `~/workspace/source/src/app/lib/notifications`:
+
+```typescript
+await createNotification({
+  householdId: household.id,
+  type: 'chores',
+  title: 'Chore Completed',
+  body: `You completed: ${deleted.name}`,
+});
+```
+
+## Error Responses
+
+<ResponseField name="401 Unauthorized">
+  User is not authenticated
+</ResponseField>
+
+```
+Unauthorized
+```
+
+<ResponseField name="400 Bad Request">
+  Missing notification ID
+</ResponseField>
+
+```json
+{
+  "message": "Notification ID is required"
+}
+```
+
+<ResponseField name="500 Internal Server Error">
+  Unexpected server error
+</ResponseField>
+
+```
+Internal Server Error
+```
+
+## Use Cases
+
+### Display Unread Notifications
+```javascript
+const response = await fetch('/api/notifications');
+const notifications = await response.json();
+const unread = notifications.filter(n => !n.read);
+```
+
+### Show Recent Activity
+```javascript
+const response = await fetch('/api/notifications');
+const notifications = await response.json();
+const recent = notifications.slice(0, 5); // Last 5 notifications
+```
+
+### Notification Bell Badge
+```javascript
+const response = await fetch('/api/notifications');
+const notifications = await response.json();
+const unreadCount = notifications.filter(n => !n.read).length;
+// Display unreadCount in badge
+```
+
+## Source Code Reference
+
+- Get notifications: `~/workspace/source/src/app/api/notifications/route.ts:19`
+- Delete notification: `~/workspace/source/src/app/api/notifications/delete/route.ts:19`
+- Clear all: `~/workspace/source/src/app/api/notifications/clear/route.ts:19`
+- Notification library: `~/workspace/source/src/app/lib/notifications`

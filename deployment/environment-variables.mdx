@@ -1,0 +1,281 @@
+---
+title: Environment Variables
+description: Configure your Home Manager application with required and optional environment variables
+---
+
+## Overview
+
+Home Manager requires specific environment variables to function properly. This guide covers all required and optional environment variables you need to configure for your deployment.
+
+<Note>
+Environment variables should be stored in a `.env.local` file for local development and configured in your hosting platform's environment settings for production.
+</Note>
+
+## Required Environment Variables
+
+### Database Configuration
+
+<Steps>
+  <Step title="DATABASE_URL">
+    PostgreSQL connection string for your database.
+
+    ```bash
+    DATABASE_URL="postgresql://username:password@host:port/database?schema=public"
+    ```
+
+    **Format:**
+    - `username`: Your PostgreSQL username
+    - `password`: Your PostgreSQL password
+    - `host`: Database host (e.g., `localhost` or `db.example.com`)
+    - `port`: Database port (default: `5432`)
+    - `database`: Database name
+
+    **Examples:**
+
+    <CodeGroup>
+    ```bash Local Development
+    DATABASE_URL="postgresql://postgres:password@localhost:5432/homemanager"
+    ```
+
+    ```bash Supabase
+    DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.example.supabase.co:5432/postgres"
+    ```
+
+    ```bash Neon
+    DATABASE_URL="postgresql://user:password@ep-example.us-east-2.aws.neon.tech/neondb"
+    ```
+
+    ```bash Railway
+    DATABASE_URL="postgresql://postgres:password@containers-us-west.railway.app:7432/railway"
+    ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+### Authentication (Clerk)
+
+Home Manager uses [Clerk](https://clerk.dev) for authentication and user management.
+
+<Steps>
+  <Step title="CLERK_SECRET_KEY">
+    Server-side secret key for Clerk API access.
+
+    ```bash
+    CLERK_SECRET_KEY="sk_test_xxxxxxxxxxxxxxxxxxxxx"
+    ```
+
+    <Warning>
+    Keep this secret! Never commit it to version control or expose it in client-side code.
+    </Warning>
+
+    **Where to find it:**
+    1. Go to your [Clerk Dashboard](https://dashboard.clerk.com)
+    2. Select your application
+    3. Navigate to **API Keys**
+    4. Copy the **Secret Key**
+  </Step>
+
+  <Step title="NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY">
+    Public key for client-side Clerk integration.
+
+    ```bash
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_xxxxxxxxxxxxxxxxxxxxx"
+    ```
+
+    <Note>
+    The `NEXT_PUBLIC_` prefix makes this variable accessible in the browser. This is safe because it's a publishable key designed for client-side use.
+    </Note>
+
+    **Where to find it:**
+    - Same location as Secret Key in Clerk Dashboard
+    - Copy the **Publishable Key**
+  </Step>
+</Steps>
+
+## Optional Environment Variables
+
+### Node Environment
+
+```bash
+NODE_ENV="production"
+```
+
+Specifies the environment mode. Affects:
+- Prisma connection pooling
+- Next.js optimizations
+- Logging verbosity
+
+**Values:**
+- `development` - Local development (default)
+- `production` - Production deployment
+- `test` - Testing environment
+
+### Clerk Sign-In/Sign-Up URLs
+
+Customize authentication redirect paths:
+
+```bash
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
+```
+
+<Tip>
+These are optional. Clerk will use sensible defaults if not specified.
+</Tip>
+
+## Environment File Setup
+
+### Local Development
+
+Create a `.env.local` file in the project root:
+
+<Steps>
+  <Step title="Create Environment File">
+    ```bash
+    touch .env.local
+    ```
+  </Step>
+
+  <Step title="Add Required Variables">
+    ```bash .env.local
+    # Database
+    DATABASE_URL="postgresql://postgres:password@localhost:5432/homemanager"
+
+    # Clerk Authentication
+    CLERK_SECRET_KEY="sk_test_xxxxxxxxxxxxxxxxxxxxx"
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_xxxxxxxxxxxxxxxxxxxxx"
+
+    # Optional: Custom Auth URLs
+    NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+    NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+    NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
+    NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
+    ```
+  </Step>
+
+  <Step title="Verify Configuration">
+    ```bash
+    npm run dev
+    ```
+
+    The application should start without errors. Check the console for any missing environment variable warnings.
+  </Step>
+</Steps>
+
+<Warning>
+**Security Best Practices:**
+- Never commit `.env.local` or `.env` files to version control
+- Add `.env*.local` to your `.gitignore` file
+- Use different Clerk keys for development and production
+- Rotate secrets regularly
+- Use strong, unique passwords for database connections
+</Warning>
+
+## Production Environment
+
+### Platform-Specific Configuration
+
+<CodeGroup>
+```bash Vercel
+# Configure via Vercel Dashboard or CLI
+vercel env add DATABASE_URL
+vercel env add CLERK_SECRET_KEY
+vercel env add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+```
+
+```bash Docker
+# Use docker-compose.yml or .env file
+docker run -e DATABASE_URL="postgresql://..." \
+           -e CLERK_SECRET_KEY="sk_live_..." \
+           -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_live_..." \
+           home-manager:latest
+```
+
+```bash Railway
+# Configure via Railway Dashboard
+# Variables are automatically injected
+```
+
+```bash Render
+# Configure via Render Dashboard
+# Environment > Add Environment Variable
+```
+</CodeGroup>
+
+## Verification
+
+After setting environment variables, verify your configuration:
+
+<Steps>
+  <Step title="Check Database Connection">
+    ```bash
+    npx prisma db pull
+    ```
+
+    Should connect successfully without errors.
+  </Step>
+
+  <Step title="Test Build">
+    ```bash
+    npm run build
+    ```
+
+    The build should complete successfully with Prisma client generation.
+  </Step>
+
+  <Step title="Verify Clerk Integration">
+    Start the application and navigate to `/sign-in`. The Clerk sign-in component should load properly.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Database Connection Issues
+
+<Warning>
+**Error:** `Can't reach database server`
+
+**Solutions:**
+- Verify DATABASE_URL format is correct
+- Check database server is running
+- Ensure network access (firewall/security groups)
+- Verify credentials are correct
+- For cloud databases, check IP allowlist
+</Warning>
+
+### Clerk Authentication Issues
+
+<Warning>
+**Error:** `Clerk: Missing publishable key`
+
+**Solutions:**
+- Ensure `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set
+- For Next.js, restart dev server after adding environment variables
+- Check key starts with `pk_test_` or `pk_live_`
+- Verify key is copied completely without extra spaces
+</Warning>
+
+### Build Failures
+
+<Warning>
+**Error:** `Prisma Client could not be generated`
+
+**Solutions:**
+- Ensure DATABASE_URL is set during build
+- Run `npx prisma generate` manually
+- Check `package.json` has `postinstall` script
+- Verify network connectivity to database during build
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Database Setup" icon="database" href="/deployment/database-setup">
+    Configure PostgreSQL and run Prisma migrations
+  </Card>
+  <Card title="Deployment Guide" icon="rocket" href="/deployment/deployment-guide">
+    Deploy to Vercel, Docker, or custom servers
+  </Card>
+</CardGroup>

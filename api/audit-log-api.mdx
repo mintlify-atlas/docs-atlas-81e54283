@@ -1,0 +1,361 @@
+---
+title: 'Audit Log API'
+description: 'Track and monitor user activities across the application'
+---
+
+## Overview
+
+The Audit Log API provides activity tracking capabilities, allowing you to create and retrieve logs of user actions. Logs are automatically cleaned up after 7 days and support pagination and filtering.
+
+## Configuration
+
+<ParamField name="DAYS_TO_KEEP" type="number" default="7">
+  Number of days to retain audit logs (older logs are automatically deleted)
+</ParamField>
+
+<ParamField name="PAGE_SIZE" type="number" default="5">
+  Number of logs returned per page when paginated
+</ParamField>
+
+## Endpoints
+
+### Create Audit Log Entry
+
+<ParamField path="POST /api/audit-log" type="endpoint">
+  Creates a new audit log entry for the authenticated user.
+</ParamField>
+
+**Authentication**: Required
+
+**Request Body**
+
+<ParamField name="action" type="string" required>
+  The action performed (e.g., "created", "updated", "deleted")
+</ParamField>
+
+<ParamField name="itemType" type="string" required>
+  Type of item affected (e.g., "chore", "bill", "shopping", "maintenance")
+</ParamField>
+
+<ParamField name="itemName" type="string" required>
+  Name or description of the item
+</ParamField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://your-domain.com/api/audit-log \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "created",
+    "itemType": "chore",
+    "itemName": "Vacuum living room"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('/api/audit-log', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    action: 'created',
+    itemType: 'chore',
+    itemName: 'Vacuum living room',
+  }),
+});
+
+const logEntry = await response.json();
+```
+</CodeGroup>
+
+**Response**
+
+<ResponseField name="id" type="string">
+  Unique log entry ID
+</ResponseField>
+
+<ResponseField name="userId" type="string">
+  Clerk user ID who performed the action
+</ResponseField>
+
+<ResponseField name="userName" type="string">
+  Display name of the user (from Clerk firstName)
+</ResponseField>
+
+<ResponseField name="action" type="string">
+  The action performed
+</ResponseField>
+
+<ResponseField name="itemType" type="string">
+  Type of item affected
+</ResponseField>
+
+<ResponseField name="itemName" type="string">
+  Name of the item
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  ISO 8601 timestamp when the log was created
+</ResponseField>
+
+**Example Response**
+
+```json
+{
+  "id": "clxlog1",
+  "userId": "user_abc123",
+  "userName": "John",
+  "action": "created",
+  "itemType": "chore",
+  "itemName": "Vacuum living room",
+  "createdAt": "2024-03-15T14:30:00.000Z"
+}
+```
+
+---
+
+### Get Audit Logs
+
+<ParamField path="GET /api/audit-log" type="endpoint">
+  Retrieves audit logs with optional pagination and filtering.
+</ParamField>
+
+**Authentication**: Not required (but recommended for production)
+
+**Query Parameters**
+
+<ParamField name="all" type="boolean" default="false">
+  If "true", returns all logs without pagination
+</ParamField>
+
+<ParamField name="user" type="string" default="">
+  Filter by user name (case-insensitive partial match)
+</ParamField>
+
+<ParamField name="action" type="string" default="">
+  Filter by action (case-insensitive partial match)
+</ParamField>
+
+<ParamField name="page" type="number" default="1">
+  Page number for pagination (only when all=false)
+</ParamField>
+
+<CodeGroup>
+```bash Get Paginated Logs
+curl -X GET "https://your-domain.com/api/audit-log?page=1"
+```
+
+```bash Get All Logs
+curl -X GET "https://your-domain.com/api/audit-log?all=true"
+```
+
+```bash Filter by User
+curl -X GET "https://your-domain.com/api/audit-log?user=john&all=true"
+```
+
+```bash Filter by Action
+curl -X GET "https://your-domain.com/api/audit-log?action=deleted&all=true"
+```
+
+```javascript Paginated Request
+const response = await fetch('/api/audit-log?page=1');
+const { logs, total } = await response.json();
+```
+
+```javascript Get All Logs
+const response = await fetch('/api/audit-log?all=true');
+const { logs } = await response.json();
+```
+
+```javascript Filtered Request
+const response = await fetch('/api/audit-log?user=john&action=created&all=true');
+const { logs } = await response.json();
+```
+</CodeGroup>
+
+**Response (Paginated)**
+
+<ResponseField name="logs" type="array">
+  Array of log entry objects
+</ResponseField>
+
+<ResponseField name="total" type="number">
+  Total number of logs matching the filters
+</ResponseField>
+
+<Expandable title="Log Entry Fields">
+  <ResponseField name="id" type="string">
+    Unique log entry ID
+  </ResponseField>
+  
+  <ResponseField name="userId" type="string">
+    Clerk user ID
+  </ResponseField>
+  
+  <ResponseField name="userName" type="string">
+    Display name of the user
+  </ResponseField>
+  
+  <ResponseField name="action" type="string">
+    Action performed
+  </ResponseField>
+  
+  <ResponseField name="itemType" type="string">
+    Type of item affected
+  </ResponseField>
+  
+  <ResponseField name="itemName" type="string">
+    Name of the item
+  </ResponseField>
+  
+  <ResponseField name="createdAt" type="string">
+    ISO 8601 timestamp
+  </ResponseField>
+</Expandable>
+
+**Example Response (Paginated)**
+
+```json
+{
+  "logs": [
+    {
+      "id": "clxlog5",
+      "userId": "user_abc123",
+      "userName": "John",
+      "action": "deleted",
+      "itemType": "bill",
+      "itemName": "Electric Bill",
+      "createdAt": "2024-03-15T16:00:00.000Z"
+    },
+    {
+      "id": "clxlog4",
+      "userId": "user_xyz789",
+      "userName": "Sarah",
+      "action": "created",
+      "itemType": "shopping",
+      "itemName": "Milk",
+      "createdAt": "2024-03-15T15:30:00.000Z"
+    },
+    {
+      "id": "clxlog3",
+      "userId": "user_abc123",
+      "userName": "John",
+      "action": "updated",
+      "itemType": "chore",
+      "itemName": "Vacuum living room",
+      "createdAt": "2024-03-15T15:00:00.000Z"
+    },
+    {
+      "id": "clxlog2",
+      "userId": "user_xyz789",
+      "userName": "Sarah",
+      "action": "created",
+      "itemType": "maintenance",
+      "itemName": "Replace air filter",
+      "createdAt": "2024-03-15T14:45:00.000Z"
+    },
+    {
+      "id": "clxlog1",
+      "userId": "user_abc123",
+      "userName": "John",
+      "action": "created",
+      "itemType": "chore",
+      "itemName": "Vacuum living room",
+      "createdAt": "2024-03-15T14:30:00.000Z"
+    }
+  ],
+  "total": 23
+}
+```
+
+**Response (All Logs)**
+
+```json
+{
+  "logs": [
+    // ... all log entries (not paginated)
+  ]
+}
+```
+
+<Note>
+  When requesting logs, the API automatically deletes entries older than 7 days before returning results. This cleanup happens on every GET request.
+</Note>
+
+## Automatic Cleanup
+
+Each time you request audit logs, the API automatically removes entries older than `DAYS_TO_KEEP` (default: 7 days):
+
+```typescript
+await prisma.auditLog.deleteMany({
+  where: {
+    createdAt: {
+      lt: new Date(Date.now() - DAYS_TO_KEEP * 24 * 60 * 60 * 1000),
+    },
+  },
+});
+```
+
+## Filtering
+
+The API supports case-insensitive partial matching on:
+
+- **user**: Filters by `userName` field
+- **action**: Filters by `action` field
+
+Combine multiple filters to narrow results:
+
+```javascript
+// Find all "deleted" actions by "John"
+const response = await fetch('/api/audit-log?user=john&action=deleted&all=true');
+const { logs } = await response.json();
+```
+
+## Pagination
+
+By default, the API returns 5 logs per page. Use the `page` parameter to navigate:
+
+```javascript
+// Page 1
+const page1 = await fetch('/api/audit-log?page=1');
+const { logs: logs1, total } = await page1.json();
+
+// Page 2
+const page2 = await fetch('/api/audit-log?page=2');
+const { logs: logs2 } = await page2.json();
+
+// Calculate total pages
+const totalPages = Math.ceil(total / 5);
+```
+
+## Common Actions
+
+Recommended action values for consistency:
+
+- `created` - Item was created
+- `updated` - Item was modified
+- `deleted` - Item was deleted
+- `completed` - Task was completed
+- `invited` - User was invited
+- `accepted` - Invitation was accepted
+- `declined` - Invitation was declined
+
+## Error Responses
+
+<ResponseField name="500 Internal Server Error">
+  Unexpected server error
+</ResponseField>
+
+```
+Internal Server Error
+```
+
+<Note>
+  The GET endpoint does not require authentication in the current implementation. For production use, consider adding authentication to protect sensitive activity data.
+</Note>
+
+## Source Code Reference
+
+- Create log: `~/workspace/source/src/app/api/audit-log/route.ts:28`
+- Get logs: `~/workspace/source/src/app/api/audit-log/route.ts:55`
+- User identity: `~/workspace/source/src/app/api/audit-log/route.ts:13`

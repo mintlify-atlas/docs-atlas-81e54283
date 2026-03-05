@@ -1,0 +1,247 @@
+---
+title: "Maintenance"
+description: "Log maintenance tasks with categories, descriptions, and recurring schedules"
+icon: "wrench"
+---
+
+## Overview
+
+The Maintenance feature helps you track home maintenance tasks, repairs, and upkeep. Organize tasks by category, set recurring schedules, and keep a history of completed maintenance for your household.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Category Organization" icon="layer-group">
+    Group tasks by General, Plumbing, Electrical, Cleaning, or Garden
+  </Card>
+  <Card title="Recurring Schedules" icon="calendar-check">
+    Set weekly, biweekly, or monthly recurrence for routine maintenance
+  </Card>
+  <Card title="Detailed Descriptions" icon="align-left">
+    Add notes about what was done, parts used, or instructions
+  </Card>
+  <Card title="Maintenance History" icon="clock-rotate-left">
+    View completed tasks in the audit log for future reference
+  </Card>
+</CardGroup>
+
+## Creating a Maintenance Task
+
+1. Click the **+** floating button at the bottom right
+2. Fill in the task details:
+   - **Task Title** - Short description (e.g., "Replace HVAC filter")
+   - **Category** - Select from: General, Plumbing, Electrical, Cleaning, Garden
+   - **Recurrence** - Choose: None, Weekly, Biweekly, or Monthly
+   - **Description** - Add details about the task (required field)
+3. Click **Add** to save
+
+The task appears in its category section immediately.
+
+## Maintenance Categories
+
+<Tabs>
+  <Tab title="General">
+    Routine home upkeep: air filters, smoke detector batteries, door locks, weather stripping, caulking, and general repairs
+  </Tab>
+  <Tab title="Plumbing">
+    Water-related tasks: leaky faucets, drain cleaning, pipe repairs, water heater maintenance, toilet repairs
+  </Tab>
+  <Tab title="Electrical">
+    Electrical system work: light bulb replacements, outlet repairs, circuit breaker checks, wiring, smart home device installation
+  </Tab>
+  <Tab title="Cleaning">
+    Deep cleaning tasks: gutter cleaning, power washing, window washing, carpet cleaning, vent cleaning
+  </Tab>
+  <Tab title="Garden">
+    Outdoor maintenance: lawn care, pruning, fertilizing, irrigation repairs, pest control, seasonal planting
+  </Tab>
+</Tabs>
+
+## Marking Tasks Complete
+
+When you finish a maintenance task:
+
+1. **Tap the task item** in the list
+2. It's removed from view immediately
+3. An **Undo** button appears for 3.5 seconds
+4. After 4 seconds, the task is permanently deleted
+5. The completion is logged in the audit trail as "Completed maintenance"
+
+<Note>
+  Completed tasks are logged with the user name, task title, and timestamp. Access the Dashboard's Activity Feed to review maintenance history.
+</Note>
+
+## Editing Tasks
+
+To update a maintenance task:
+
+1. Tap the **edit icon** on the right side of the task
+2. Modify any field:
+   - Task title
+   - Category
+   - Recurrence schedule
+   - Description
+3. Click **Update** to save
+
+Changes sync instantly to all household members.
+
+## Reordering Tasks
+
+Organize tasks by priority within each category:
+
+1. **Press and hold** a task item
+2. **Drag it** up or down within the same category
+3. **Release** to drop it in the new position
+
+The order is saved and synced across devices.
+
+<Note>
+  Tasks can only be reordered within their category. To move a task to a different category, use the edit function.
+</Note>
+
+## Recurrence Schedules
+
+<Accordion title="None">
+  **Best for:** One-time repairs or tasks that don't repeat
+  
+  Examples: Fixing a broken door handle, painting a room, replacing a damaged tile
+</Accordion>
+
+<Accordion title="Weekly">
+  **Best for:** Tasks that need frequent attention
+  
+  Examples: Lawn mowing, pool maintenance, trash area cleaning, checking irrigation system
+</Accordion>
+
+<Accordion title="Biweekly">
+  **Best for:** Moderate frequency maintenance
+  
+  Examples: Deep cleaning, changing HVAC filters (in heavy use season), fertilizing lawn
+</Accordion>
+
+<Accordion title="Monthly">
+  **Best for:** Routine checks and seasonal tasks
+  
+  Examples: Testing smoke detectors, inspecting plumbing for leaks, cleaning gutters, checking fire extinguisher pressure
+</Accordion>
+
+## Task Descriptions
+
+The description field is required and should include:
+
+- **What was done** - Specific action taken
+- **Parts used** - Brand, model, or specifications
+- **Observations** - Any issues noticed during the task
+- **Future notes** - Reminders for next time
+
+### Example Descriptions
+
+<CodeGroup>
+
+```text Replace HVAC Filter
+Installed 16x25x1 MERV 11 filter from Home Depot.
+Filter was very dirty - consider changing every 6 weeks instead of 8.
+Next change: Check blower motor for dust buildup.
+```
+
+```text Fix Kitchen Faucet Leak
+Replaced O-ring on cold water cartridge.
+Used Danco #35 O-ring from spare parts bin.
+No more dripping - monitor for next few days.
+```
+
+```text Clean Gutters
+Removed leaves and debris from all gutters.
+Downspouts were clear - no clogs.
+Noticed: Small rust spot on east gutter - may need replacement next year.
+```
+
+</CodeGroup>
+
+## Permissions
+
+Access to maintenance features by household role:
+
+| Role | View Tasks | Add Tasks | Edit Tasks | Complete Tasks | Reorder |
+|------|-----------|-----------|-----------|----------------|----------|
+| **Owner** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Member** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Guest** | ✅ | ❌ | ❌ | ❌ | ❌ |
+
+<Note>
+  Guests can view the maintenance list but cannot make changes. This is useful for contractors or service providers who need to see the household's maintenance history.
+</Note>
+
+## Data Model
+
+Each maintenance task contains:
+
+- `id` - Unique identifier (UUID)
+- `householdId` - Links the task to your household
+- `title` - Task name
+- `category` - One of: General, Plumbing, Electrical, Cleaning, Garden
+- `description` - Detailed notes (required)
+- `recurrence` - Frequency: "none", "weekly", "biweekly", or "monthly"
+- `position` - Sort order within category
+- `checked` - Completion status
+- `createdAt` - Timestamp when created
+
+## Audit Logging
+
+Maintenance actions are automatically logged:
+
+- **Added maintenance** - When a new task is created
+- **Completed maintenance** - When a task is marked as done
+
+Each log entry includes the user name, task title, and timestamp for accountability and historical tracking.
+
+## Tips & Best Practices
+
+<Accordion title="Log Tasks Immediately">
+  Add maintenance tasks as soon as you notice something needs attention, not when you plan to do it. This creates a running to-do list.
+</Accordion>
+
+<Accordion title="Use Detailed Descriptions">
+  Future you (or the next homeowner) will thank you for detailed notes about parts, procedures, and observations.
+</Accordion>
+
+<Accordion title="Set Realistic Recurrence">
+  Don't over-commit to weekly tasks you'll do monthly. Set recurrence to match reality, then adjust if needed.
+</Accordion>
+
+<Accordion title="Order by Season">
+  Within categories, order tasks by when they typically need to be done (e.g., gutter cleaning before winter).
+</Accordion>
+
+<Accordion title="Cross-Reference with Calendar">
+  For critical recurring maintenance (like HVAC filter changes), also set calendar reminders as backup.
+</Accordion>
+
+<Accordion title="Include Part Numbers">
+  Note specific part numbers and suppliers in descriptions so you can quickly reorder when needed.
+</Accordion>
+
+## Common Workflows
+
+### Seasonal Home Maintenance
+
+1. At the start of each season, create maintenance tasks for seasonal needs
+2. Set appropriate categories (Garden for spring planting, Plumbing for winter pipe protection)
+3. Complete tasks and add detailed notes about what was done
+4. Review the audit log at the end of the season to plan for next year
+
+### Hiring Contractors
+
+1. Create a maintenance task for the work needed
+2. Add contractor quotes and contact info in the description
+3. When work is completed, update the description with final cost and date
+4. Mark as complete to log it in the audit trail
+5. Reference the audit log when the contractor returns for future work
+
+### Preventive Maintenance Schedule
+
+1. Create recurring tasks for all routine maintenance
+2. Order them by frequency (weekly tasks at top, monthly at bottom)
+3. Each week, work through the list from top to bottom
+4. Add observations to descriptions to catch developing issues early
+5. Adjust recurrence if you find tasks need more or less frequent attention
