@@ -56,9 +56,6 @@ The Chores API allows you to create, read, update, delete, and reorder household
     Creation timestamp
   </ResponseField>
   
-  <ResponseField name="updatedAt" type="datetime">
-    Last update timestamp
-  </ResponseField>
 </Expandable>
 
 <CodeGroup>
@@ -92,7 +89,6 @@ const chores = await response.json();
     "position": 0,
     "checked": false,
     "createdAt": "2024-03-15T10:00:00Z",
-    "updatedAt": "2024-03-15T10:00:00Z"
   },
   {
     "id": "clx789ghi",
@@ -103,7 +99,6 @@ const chores = await response.json();
     "position": 1,
     "checked": false,
     "createdAt": "2024-03-15T11:00:00Z",
-    "updatedAt": "2024-03-15T11:00:00Z"
   }
 ]
 ```
@@ -202,7 +197,6 @@ const response = await fetch('/api/chores', {
   "position": 2,
   "checked": false,
   "createdAt": "2024-03-15T12:00:00Z",
-  "updatedAt": "2024-03-15T12:00:00Z"
 }
 ```
 
@@ -334,7 +328,6 @@ const deletedChore = await response.json();
   "position": 0,
   "checked": false,
   "createdAt": "2024-03-15T10:00:00Z",
-  "updatedAt": "2024-03-15T10:00:00Z"
 }
 ```
 

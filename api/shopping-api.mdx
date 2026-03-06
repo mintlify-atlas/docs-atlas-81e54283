@@ -51,10 +51,6 @@ The Shopping API allows you to create, read, update, delete, and reorder shoppin
   <ResponseField name="createdAt" type="datetime">
     Creation timestamp
   </ResponseField>
-  
-  <ResponseField name="updatedAt" type="datetime">
-    Last update timestamp
-  </ResponseField>
 </Expandable>
 
 <CodeGroup>
@@ -80,8 +76,7 @@ const items = await response.json();
     "category": "Dairy",
     "position": 0,
     "checked": false,
-    "createdAt": "2024-03-15T10:00:00Z",
-    "updatedAt": "2024-03-15T10:00:00Z"
+    "createdAt": "2024-03-15T10:00:00Z"
   },
   {
     "id": "clx789ghi",
@@ -90,8 +85,7 @@ const items = await response.json();
     "category": "Produce",
     "position": 1,
     "checked": false,
-    "createdAt": "2024-03-15T11:00:00Z",
-    "updatedAt": "2024-03-15T11:00:00Z"
+    "createdAt": "2024-03-15T11:00:00Z"
   }
 ]
 ```
@@ -166,8 +160,7 @@ const newItem = await response.json();
   "category": "Dairy",
   "position": 2,
   "checked": false,
-  "createdAt": "2024-03-15T12:00:00Z",
-  "updatedAt": "2024-03-15T12:00:00Z"
+  "createdAt": "2024-03-15T12:00:00Z"
 }
 ```
 
@@ -283,8 +276,7 @@ const deletedItem = await response.json();
   "category": "Dairy",
   "position": 0,
   "checked": false,
-  "createdAt": "2024-03-15T10:00:00Z",
-  "updatedAt": "2024-03-15T10:00:00Z"
+  "createdAt": "2024-03-15T10:00:00Z"
 }
 ```
 

@@ -56,9 +56,6 @@ The Maintenance API allows you to manage home maintenance tasks, including repai
     Creation timestamp
   </ResponseField>
   
-  <ResponseField name="updatedAt" type="datetime">
-    Last update timestamp
-  </ResponseField>
 </Expandable>
 
 <CodeGroup>
@@ -86,7 +83,6 @@ const items = await response.json();
     "position": 0,
     "checked": false,
     "createdAt": "2024-03-15T10:00:00Z",
-    "updatedAt": "2024-03-15T10:00:00Z"
   },
   {
     "id": "clx789ghi",
@@ -97,7 +93,6 @@ const items = await response.json();
     "position": 1,
     "checked": false,
     "createdAt": "2024-03-15T11:00:00Z",
-    "updatedAt": "2024-03-15T11:00:00Z"
   }
 ]
 ```
@@ -180,7 +175,6 @@ const newItem = await response.json();
   "position": 2,
   "checked": false,
   "createdAt": "2024-03-15T12:00:00Z",
-  "updatedAt": "2024-03-15T12:00:00Z"
 }
 ```
 
@@ -304,7 +298,6 @@ const deletedItem = await response.json();
   "position": 0,
   "checked": false,
   "createdAt": "2024-03-15T10:00:00Z",
-  "updatedAt": "2024-03-15T10:00:00Z"
 }
 ```
 

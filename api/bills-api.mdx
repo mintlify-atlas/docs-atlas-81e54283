@@ -60,9 +60,6 @@ The Bills API enables you to manage household bills, including tracking amounts,
     Creation timestamp
   </ResponseField>
   
-  <ResponseField name="updatedAt" type="datetime">
-    Last update timestamp
-  </ResponseField>
 </Expandable>
 
 <CodeGroup>
@@ -91,7 +88,6 @@ const bills = await response.json();
     "position": 0,
     "checked": false,
     "createdAt": "2024-03-01T10:00:00Z",
-    "updatedAt": "2024-03-01T10:00:00Z"
   },
   {
     "id": "clx789ghi",
@@ -103,7 +99,6 @@ const bills = await response.json();
     "position": 1,
     "checked": true,
     "createdAt": "2024-03-01T11:00:00Z",
-    "updatedAt": "2024-03-15T09:30:00Z"
   }
 ]
 ```
@@ -193,7 +188,6 @@ const newBill = await response.json();
   "position": 2,
   "checked": false,
   "createdAt": "2024-03-15T12:00:00Z",
-  "updatedAt": "2024-03-15T12:00:00Z"
 }
 ```
 
@@ -324,7 +318,6 @@ const deletedBill = await response.json();
   "position": 0,
   "checked": false,
   "createdAt": "2024-03-01T10:00:00Z",
-  "updatedAt": "2024-03-01T10:00:00Z"
 }
 ```
 
